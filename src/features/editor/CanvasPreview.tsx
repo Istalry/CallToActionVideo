@@ -15,7 +15,7 @@ export const CanvasPreview: React.FC = () => {
     const { isRecording, startRecording } = useVideoExport(canvasRef);
 
     return (
-        <div className="flex-1 bg-[#101010] relative flex flex-col">
+        <div className="flex-1 bg-[#101010] relative flex flex-col overflow-hidden">
             {/* Toolbar */}
             <div className="h-12 border-b border-gray-800 flex items-center justify-between px-4 bg-surface/30">
                 <div className="flex items-center gap-2">
@@ -57,19 +57,20 @@ export const CanvasPreview: React.FC = () => {
             </div>
 
             {/* Canvas Area */}
-            <div className="flex-1 flex items-center justify-center p-8 overflow-hidden bg-checkerboard">
-                <div className="relative shadow-2xl border border-gray-800 bg-transparent flex items-center justify-center">
+            <div className="flex-1 min-h-0 flex items-center justify-center p-8 overflow-hidden bg-checkerboard cursor-zoom-in">
+                <div
+                    className="relative shadow-2xl border border-gray-800 bg-transparent flex items-center justify-center"
+                    style={{
+                        aspectRatio: format === 'landscape' ? '16 / 9' : '9 / 16',
+                        maxHeight: '100%',
+                        maxWidth: '100%'
+                    }}
+                >
                     <canvas
                         ref={canvasRef}
                         width={format === 'landscape' ? 1920 : 1080}
                         height={format === 'landscape' ? 1080 : 1920}
-                        className="max-w-full max-h-full object-contain"
-                        style={{
-                            // maintain aspect ratio in preview
-                            aspectRatio: format === 'landscape' ? '16/9' : '9/16',
-                            height: format === 'landscape' ? 'auto' : '90%',
-                            width: format === 'landscape' ? '90%' : 'auto'
-                        }}
+                        className="w-full h-full object-contain block"
                     />
                 </div>
             </div>

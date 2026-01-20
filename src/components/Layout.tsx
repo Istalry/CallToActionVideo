@@ -6,7 +6,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
-        <div className="min-h-screen bg-background text-gray-100 flex flex-col">
+        <div className="h-screen overflow-hidden bg-background text-gray-100 flex flex-col">
             <header className="h-16 border-b border-gray-800 flex items-center px-6 bg-surface/50 backdrop-blur-sm z-10">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
