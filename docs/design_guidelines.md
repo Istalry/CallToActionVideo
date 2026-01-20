@@ -7,8 +7,9 @@ The application should feel **"Premium, Modern, and Dynamic"**. It is a creative
 -   **Theme**: Dark Mode default (preferred for video editing tools).
 -   **Palette**:
     -   **Background**: Deep rich grays/blacks (e.g., `#121212`, `#1E1E1E`).
-    -   **Accents**: Vibrant, electric colors (Neon Purple, Cyber Blue, Hot Pink) to guide user action and highlight active states.
+    -   **Accents**: Vibrant, electric colors (Neon Purple, Cyber Blue, Hot Pink) to guide user action and highlight active states. Users can customize CTA colors via a color wheel.
     -   **Glassmorphism**: Use subtle translucent layers with backdrop blur for panels and overlays.
+    -   **Images**: User uploaded images must support "cover" fitting to avoid stretching, with optional manual adjustments (scale/position).
 -   **Typography**:
     -   Primary: **Inter** or **Outfit** (Clean, geometric, modern).
     -   Headings: Bold, distinct weight.

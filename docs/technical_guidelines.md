@@ -11,6 +11,8 @@ We will utilize a **Web Application** architecture hosted on GitHub Pages. This 
     -   Rapid UI development, consistent design system.
 -   **Animation & Rendering**: **HTML5 Canvas** (likely via `react-konva` or native API) + `gsap` (GreenSock) or `framer-motion`.
     -   *Why Canvas?* To ensure frame-perfect export to video, drawing to a Canvas is more reliable than recording DOM elements. We can capture the Canvas stream easily.
+    -   *Tweening*: Support variable durations and easing types (Elastic, Smooth, Bounce).
+    -   *Image Processing*: Calculate aspect ratios to implement "object-fit: cover" behavior manually on Canvas draw calls.
 -   **Video Export**: `MediaRecorder` API (browser native) capturing the Canvas stream.
     -   Output: `video/webm; codecs=vp9` (supports transparency).
 
