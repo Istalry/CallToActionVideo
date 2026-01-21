@@ -30,7 +30,11 @@ The application should feel **"Premium, Modern, and Dynamic"**. It is a creative
 2.  **Animation Control**:
     -   **Motion Type**: Select between Smooth, Elastic, and Bounce curves.
     -   **Cursor**: Independent control for cursor motion smoothing.
-3.  **Export**:
+3.  **Particle Customization**:
+    -   **Physics**: Control Gravity and Rotation speed for realistic effects (e.g., falling confetti vs floating bubbles).
+    -   **Visuals**: Switchshapes (Square/Circle) or upload custom images (e.g., channel logo confetti).
+    -   **Scale**: Fine-tune Min/Max size variance.
+4.  **Export**:
     -   Prominent "Export" button.
     -   Handles browser-native file saving (File System Access API where supported).
 

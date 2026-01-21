@@ -13,6 +13,7 @@ We will utilize a **Web Application** architecture hosted on GitHub Pages. This 
     -   *Implementation*: A custom `renderLoop.ts` handles the `requestAnimationFrame` cycle.
     -   *State Separation*: Rendering logic is pure and separated from React state (`useStore`).
     -   *Tweening*: Custom easing functions (`easings.ts`) support `Smooth` (Expo), `Elastic`, and `Bounce` curves.
+    -   *Particles*: Advanced particle system supporting Gravity, Rotation, and Custom Images (via `ctx.drawImage` with rotation transforms).
 -   **Video Export**: `MediaRecorder` API (browser native) capturing the Canvas stream.
     -   Output: `video/webm; codecs=vp9` (supports transparency), falling back to `vp8`.
 

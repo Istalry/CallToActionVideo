@@ -1,9 +1,11 @@
 import type { CTAState } from '../../store/useStore';
 import { Easing } from '../../utils/easings';
+import { noise2D } from '../../utils/noise';
 
 export interface RenderAssets {
     image: HTMLImageElement | null;
     cursor: HTMLImageElement | null;
+    particleImage: HTMLImageElement | null;
 }
 
 export interface Particle {
@@ -12,8 +14,11 @@ export interface Particle {
     vx: number;
     vy: number;
     life: number;
+    maxLife: number;
     color: string;
     size: number;
+    rotation: number;
+    vRotation: number;
 }
 
 export const renderFrame = (
@@ -200,14 +205,19 @@ export const renderFrame = (
             for (let i = 0; i < particles.count; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = (particles.speed * 0.5) + Math.random() * particles.speed;
+                const life = particles.lifeMin + Math.random() * (particles.lifeMax - particles.lifeMin);
+
                 particlesRef.current.push({
                     x: cx,
                     y: cy,
                     vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed - 5,
-                    life: 1.0,
+                    vy: Math.sin(angle) * speed,
+                    life: life,
+                    maxLife: life,
                     color: particles.colors[Math.floor(Math.random() * particles.colors.length)],
-                    size: 5 + Math.random() * 10
+                    size: particles.minSize + Math.random() * (particles.maxSize - particles.minSize),
+                    rotation: Math.random() * 360,
+                    vRotation: (Math.random() - 0.5) * particles.rotationSpeed
                 });
             }
         }
@@ -218,17 +228,57 @@ export const renderFrame = (
     if (particlesRef.current.length > 0) {
         ctx.globalAlpha = 1;
         particlesRef.current.forEach((p) => {
+            // Noise
+            if (particles.noiseStrength > 0) {
+                const n = noise2D(p.x / particles.noiseScale, p.y / particles.noiseScale);
+                const angle = n * Math.PI * 2;
+                p.vx += Math.cos(angle) * particles.noiseStrength * 0.1;
+                p.vy += Math.sin(angle) * particles.noiseStrength * 0.1;
+            }
+
             p.x += p.vx;
             p.y += p.vy;
-            p.vy += 0.5; // Gravity
+            p.vy += particles.gravity; // User Gravity
+            p.rotation += p.vRotation; // Rotation
             p.life -= 0.02;
 
             if (p.life > 0) {
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.rect(p.x, p.y, p.size, p.size);
-                ctx.fill();
+                const lifeProgress = p.life / p.maxLife;
+                let opacity = 1;
+                let scale = 1;
+
+                if (particles.fadeMode === 'opacity' || particles.fadeMode === 'both') {
+                    opacity = lifeProgress;
+                }
+                if (particles.fadeMode === 'scale' || particles.fadeMode === 'both') {
+                    scale = lifeProgress;
+                }
+
+                ctx.globalAlpha = opacity;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.scale(scale, scale);
+
+                if (particles.shape === 'image' && assets.particleImage) {
+                    // Draw Image
+                    const size = p.size * 2;
+                    ctx.drawImage(assets.particleImage, -size / 2, -size / 2, size, size);
+                } else if (particles.shape === 'circle') {
+                    // Draw Circle
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Draw Square (Default)
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.rect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.fill();
+                }
+
+                ctx.restore();
             }
         });
         particlesRef.current = particlesRef.current.filter(p => p.life > 0);

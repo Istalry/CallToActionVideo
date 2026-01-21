@@ -17,7 +17,23 @@ export interface CTAState {
         opacity: boolean;
     };
     cursor: { visible: boolean; animationType: 'smooth' | 'elastic' | 'bounce' };
-    particles: { enabled: boolean; count: number; speed: number; colors: string[] };
+    particles: {
+        enabled: boolean;
+        count: number;
+        speed: number;
+        minSize: number;
+        maxSize: number;
+        gravity: number;
+        rotationSpeed: number;
+        lifeMin: number;
+        lifeMax: number;
+        fadeMode: 'opacity' | 'scale' | 'both' | 'none';
+        noiseStrength: number;
+        noiseScale: number;
+        shape: 'square' | 'circle' | 'image';
+        image: string | null;
+        colors: string[];
+    };
 
     subscribedText: string;
 
@@ -38,7 +54,23 @@ export interface CTAState {
         opacity: boolean;
     }>) => void;
     setCursor: (cursor: Partial<{ visible: boolean; animationType: 'smooth' | 'elastic' | 'bounce' }>) => void;
-    setParticles: (particles: Partial<{ enabled: boolean; count: number; speed: number; colors: string[] }>) => void;
+    setParticles: (particles: Partial<{
+        enabled: boolean;
+        count: number;
+        speed: number;
+        minSize: number;
+        maxSize: number;
+        gravity: number;
+        rotationSpeed: number;
+        lifeMin: number;
+        lifeMax: number;
+        fadeMode: 'opacity' | 'scale' | 'both' | 'none';
+        noiseStrength: number;
+        noiseScale: number;
+        shape: 'square' | 'circle' | 'image';
+        image: string | null;
+        colors: string[];
+    }>) => void;
 }
 
 export const useStore = create<CTAState>((set) => ({
@@ -71,6 +103,17 @@ export const useStore = create<CTAState>((set) => ({
         enabled: true,
         count: 50,
         speed: 10,
+        minSize: 5,
+        maxSize: 15,
+        gravity: 0.5,
+        rotationSpeed: 0,
+        lifeMin: 0.5,
+        lifeMax: 1.5,
+        fadeMode: 'opacity',
+        noiseStrength: 0,
+        noiseScale: 100,
+        shape: 'square',
+        image: null,
         colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#8b5cf6']
     },
 

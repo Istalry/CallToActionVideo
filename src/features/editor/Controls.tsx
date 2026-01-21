@@ -247,6 +247,44 @@ export const Controls: React.FC = () => {
 
                         {particles.enabled && (
                             <>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Shape</label>
+                                        <select
+                                            value={particles.shape}
+                                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setParticles({ shape: e.target.value as any })}
+                                            className="w-full bg-background border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-primary h-[34px]"
+                                        >
+                                            <option value="square">Square</option>
+                                            <option value="circle">Circle</option>
+                                            <option value="image">Image</option>
+                                        </select>
+                                    </div>
+                                    {particles.shape === 'image' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Image</label>
+                                            <div
+                                                onClick={() => {
+                                                    const input = document.createElement('input');
+                                                    input.type = 'file';
+                                                    input.accept = 'image/*';
+                                                    input.onchange = (e) => {
+                                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                                        if (file) {
+                                                            const url = URL.createObjectURL(file);
+                                                            setParticles({ image: url });
+                                                        }
+                                                    };
+                                                    input.click();
+                                                }}
+                                                className="w-full h-[34px] border border-gray-700 rounded flex items-center justify-center cursor-pointer hover:bg-white/5"
+                                            >
+                                                <span className="text-xs text-gray-400">Upload</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <Slider
                                     label="Count"
                                     valueDisplay={particles.count}
@@ -261,6 +299,86 @@ export const Controls: React.FC = () => {
                                     value={particles.speed}
                                     onChange={(e) => setParticles({ speed: parseInt(e.target.value) })}
                                 />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Slider
+                                        label="Min Size"
+                                        valueDisplay={particles.minSize}
+                                        min="1" max="50"
+                                        value={particles.minSize}
+                                        onChange={(e) => setParticles({ minSize: parseInt(e.target.value) })}
+                                    />
+                                    <Slider
+                                        label="Max Size"
+                                        valueDisplay={particles.maxSize}
+                                        min="1" max="50"
+                                        value={particles.maxSize}
+                                        onChange={(e) => setParticles({ maxSize: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Slider
+                                        label="Gravity"
+                                        valueDisplay={particles.gravity}
+                                        min="-2" max="2" step="0.1"
+                                        value={particles.gravity}
+                                        onChange={(e) => setParticles({ gravity: parseFloat(e.target.value) })}
+                                    />
+                                    <Slider
+                                        label="Rotation"
+                                        valueDisplay={particles.rotationSpeed}
+                                        min="0" max="20"
+                                        value={particles.rotationSpeed}
+                                        onChange={(e) => setParticles({ rotationSpeed: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Slider
+                                        label="Life Min"
+                                        valueDisplay={particles.lifeMin}
+                                        min="0.1" max="2.0" step="0.1"
+                                        value={particles.lifeMin}
+                                        onChange={(e) => setParticles({ lifeMin: parseFloat(e.target.value) })}
+                                    />
+                                    <Slider
+                                        label="Life Max"
+                                        valueDisplay={particles.lifeMax}
+                                        min="0.1" max="3.0" step="0.1"
+                                        value={particles.lifeMax}
+                                        onChange={(e) => setParticles({ lifeMax: parseFloat(e.target.value) })}
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Fade Mode</label>
+                                    <select
+                                        value={particles.fadeMode}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setParticles({ fadeMode: e.target.value as 'opacity' | 'scale' | 'both' | 'none' })}
+                                        className="w-full bg-background border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-primary h-[34px]"
+                                    >
+                                        <option value="opacity">Opacity</option>
+                                        <option value="scale">Scale</option>
+                                        <option value="both">Both</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Slider
+                                        label="Noise Strength"
+                                        valueDisplay={particles.noiseStrength}
+                                        min="0" max="20"
+                                        value={particles.noiseStrength}
+                                        onChange={(e) => setParticles({ noiseStrength: parseInt(e.target.value) })}
+                                    />
+                                    <Slider
+                                        label="Noise Scale"
+                                        valueDisplay={particles.noiseScale}
+                                        min="10" max="500"
+                                        value={particles.noiseScale}
+                                        onChange={(e) => setParticles({ noiseScale: parseInt(e.target.value) })}
+                                    />
+                                </div>
+
                                 <div>
                                     <label className="text-xs text-gray-400 mb-2 block">Colors</label>
                                     <div className="flex gap-2 flex-wrap">

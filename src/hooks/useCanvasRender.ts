@@ -10,6 +10,7 @@ export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | n
     const imageRef = useRef<HTMLImageElement | null>(null);
     const cursorRef = useRef<HTMLImageElement | null>(null);
     const particlesRef = useRef<Particle[]>([]);
+    const particleImageRef = useRef<HTMLImageElement | null>(null);
 
     // Load user image
     useEffect(() => {
@@ -21,6 +22,17 @@ export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | n
             imageRef.current = null;
         }
     }, [imageUrl]);
+
+    // Load particle image
+    useEffect(() => {
+        if (state.particles.image) {
+            const img = new Image();
+            img.src = state.particles.image;
+            img.onload = () => { particleImageRef.current = img; };
+        } else {
+            particleImageRef.current = null;
+        }
+    }, [state.particles.image]);
 
     // Load cursor image
     useEffect(() => {
@@ -44,7 +56,11 @@ export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | n
                 canvas.height,
                 time,
                 state,
-                { image: imageRef.current, cursor: cursorRef.current },
+                {
+                    image: imageRef.current,
+                    cursor: cursorRef.current,
+                    particleImage: particleImageRef.current
+                },
                 particlesRef
             );
 
