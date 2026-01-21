@@ -16,9 +16,16 @@ We will utilize a **Web Application** architecture hosted on GitHub Pages. This 
     -   *Particles*: Advanced particle system supporting Gravity, Rotation, and Custom Images (via `ctx.drawImage` with rotation transforms).
 -   **Video Export**: `MediaRecorder` API (browser native) capturing the Canvas stream.
     -   Output: `video/webm; codecs=vp9` (supports transparency), falling back to `vp8`.
+-   **Desktop App**: **Electron**
+    -   Wraps the web app for standalone executable generation.
+    -   Uses `electron-builder` for packaging.
 
 ## Project Structure
 ```text
+electron/          # Electron main process source
+│   ├── main.ts        # Main entry point
+│   ├── preload.ts     # Preload script (if needed)
+│   └── tsconfig.json  # TypeScript config for main process
 src/
 ├── components/        
 │   └── ui/            # Reusable, styled UI atoms (Button, Input, Slider, Section)

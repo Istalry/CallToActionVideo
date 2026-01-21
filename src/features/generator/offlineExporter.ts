@@ -38,8 +38,12 @@ export const exportVideoOffline = async (
         const globalScale = physicalW / logicalRefW;
 
         // 2. Setup Canvas
+        console.log('[OfflineExport] Creating OffscreenCanvas...');
         const offscreenCanvas = new OffscreenCanvas(physicalW, physicalH);
-        const ctx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+        const ctx = offscreenCanvas.getContext('2d', {
+            willReadFrequently: true,
+            alpha: true
+        }) as OffscreenCanvasRenderingContext2D; // Optimized attributes
         if (!ctx) throw new Error('Could not create offscreen context');
 
         // 3. Setup Muxer & Encoder
@@ -79,29 +83,41 @@ export const exportVideoOffline = async (
         // 4. Render Loop
         const particlesRef = { current: [] as Particle[] };
 
+        console.log('[OfflineExport] Starting Render Loop...');
         for (let i = 0; i < totalFrames; i++) {
             if (videoEncoder.state === 'closed') {
-                console.error('[OfflineExport] Encoder closed unexpectedly');
+                console.error('[OfflineExport] Encoder closed unexpectedly at frame ' + i);
                 throw new Error('VideoEncoder closed unexpectedly');
             }
 
             const time = (i / fps) * 1000; // time in ms
 
             // Render
-            renderFrame(
-                ctx as any, // Cast to any because renderFrame expects CanvasRenderingContext2D
-                physicalW,
-                physicalH,
-                time,
-                state,
-                assets,
-                particlesRef,
-                globalScale
-            );
+            try {
+                // console.log(`[OfflineExport] Render Frame ${i}`); // Verbose log
+                renderFrame(
+                    ctx as any, // Cast to any because renderFrame expects CanvasRenderingContext2D
+                    physicalW,
+                    physicalH,
+                    time,
+                    state,
+                    assets,
+                    particlesRef,
+                    globalScale
+                );
+            } catch (renderErr) {
+                console.error(`[OfflineExport] Render error at frame ${i}:`, renderErr);
+                throw renderErr;
+            }
 
             // Create VideoFrame
-            // timestamp is in microseconds for VideoFrame
-            const frame = new VideoFrame(offscreenCanvas, { timestamp: time * 1000 });
+            let frame: VideoFrame | null = null;
+            try {
+                frame = new VideoFrame(offscreenCanvas, { timestamp: time * 1000 });
+            } catch (frameErr) {
+                console.error(`[OfflineExport] VideoFrame creation failed at frame ${i}:`, frameErr);
+                throw frameErr;
+            }
 
             // Encode
             try {
@@ -117,8 +133,8 @@ export const exportVideoOffline = async (
             if (i % 30 === 0) console.log(`[OfflineExport] Progress: ${i}/${totalFrames}`);
             onProgress((i / totalFrames) * 100);
 
-            // Allow UI to breathe
-            if (i % 5 === 0) await new Promise(r => setTimeout(r, 0));
+            // Allow UI to breathe - Slightly increased delay to prevent browser freeze
+            if (i % 2 === 0) await new Promise(r => setTimeout(r, 0));
         }
 
         console.log('[OfflineExport] Rendering done. Flushing encoder...');
