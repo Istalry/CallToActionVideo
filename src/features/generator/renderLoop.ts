@@ -1,0 +1,286 @@
+import type { CTAState } from '../../store/useStore';
+import { Easing } from '../../utils/easings';
+
+export interface RenderAssets {
+    image: HTMLImageElement | null;
+    cursor: HTMLImageElement | null;
+}
+
+export interface Particle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    life: number;
+    color: string;
+    size: number;
+}
+
+export const renderFrame = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    time: number,
+    state: CTAState,
+    assets: RenderAssets,
+    particlesRef: React.MutableRefObject<Particle[]>
+) => {
+    const {
+        primaryText, underText, subscribedText,
+        format, imageTransform,
+        ctaColors, subscribedColors, roundness,
+        animation, cursor, particles
+    } = state;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // --- Timeline ---
+    const D = animation.duration;
+    const enterDuration = 1000 * D;
+    const clickTime = 2500 * D;
+    const exitStartTime = 5000 * D;
+    const totalDuration = 6000 * D;
+
+    const tMs = time % totalDuration;
+
+    // 1. Box Entrance
+    let boxYOffset = 0;
+    let boxOpacity = 1;
+    let boxScale = 1;
+
+    // Helper for easing
+    const getEase = (t: number) => {
+        if (animation.type === 'elastic') return Easing.easeOutElastic(t);
+        if (animation.type === 'bounce') return Easing.easeOutBounce(t);
+        return Easing.easeOutExpo(t);
+    };
+
+    if (tMs < enterDuration) {
+        const t = tMs / enterDuration;
+        const ease = getEase(t);
+
+        if (animation.position) boxYOffset = 100 * (1 - ease);
+        if (animation.opacity) boxOpacity = ease;
+        if (animation.scale) boxScale = 0.8 + (0.2 * ease);
+    }
+    // Box Exit
+    else if (tMs > exitStartTime) {
+        const t = (tMs - exitStartTime) / (1000 * D);
+        const ease = Easing.easeOutExpo(t);
+
+        if (animation.opacity) boxOpacity = 1 - ease;
+        if (animation.scale) boxScale = 1 - (0.1 * ease);
+        if (animation.position) boxYOffset = 50 * ease;
+    }
+
+    // Context Setup
+    ctx.globalAlpha = boxOpacity;
+
+    // Box Dimensions
+    const boxW = format === 'landscape' ? 800 : 700;
+    const boxH = 200;
+    const cx = width / 2;
+    const cy = height / 2 + boxYOffset;
+
+    const x = cx - boxW / 2;
+    const y = cy - boxH / 2;
+
+    // Draw Box
+    ctx.translate(cx, cy);
+    ctx.scale(boxScale, boxScale);
+    ctx.translate(-cx, -cy);
+
+    // Click Reaction
+    const isClicked = tMs > clickTime;
+    // Click Bump
+    if (tMs > clickTime && tMs < clickTime + 200) {
+        const bumpT = (tMs - clickTime) / 200;
+        const bumpScale = 1 + Math.sin(bumpT * Math.PI) * 0.05;
+        ctx.translate(cx, cy);
+        ctx.scale(bumpScale, bumpScale);
+        ctx.translate(-cx, -cy);
+    }
+
+    ctx.beginPath();
+    // BG Color
+    ctx.fillStyle = isClicked ? subscribedColors.background : ctaColors.background;
+    if (ctx.roundRect) ctx.roundRect(x, y, boxW, boxH, roundness);
+    else ctx.rect(x, y, boxW, boxH);
+    ctx.fill();
+
+    // Shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 10;
+
+    // Content
+    // Avatar
+    const avatarSize = 140;
+    const avatarX = x + 30;
+    const avatarY = y + (boxH - avatarSize) / 2;
+
+    ctx.save();
+    ctx.shadowColor = 'transparent';
+    ctx.beginPath();
+    ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+
+    if (assets.image) {
+        const img = assets.image;
+
+        // Calculate cover dimensions
+        const imgRatio = img.width / img.height;
+        let drawW = avatarSize;
+        let drawH = avatarSize;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        if (imgRatio > 1) { // Landscape image
+            drawH = avatarSize;
+            drawW = avatarSize * imgRatio;
+            offsetX = -(drawW - avatarSize) / 2;
+        } else { // Portrait image
+            drawW = avatarSize;
+            drawH = avatarSize / imgRatio;
+            offsetY = -(drawH - avatarSize) / 2;
+        }
+
+        // Apply manual transform
+        const scale = imageTransform.scale;
+        const tx = imageTransform.x;
+        const ty = imageTransform.y;
+
+        // Transform context center of avatar
+        ctx.translate(avatarX + avatarSize / 2, avatarY + avatarSize / 2);
+        ctx.scale(scale, scale);
+        ctx.translate(tx, ty);
+        ctx.translate(-(avatarX + avatarSize / 2), -(avatarY + avatarSize / 2));
+
+        ctx.drawImage(img, avatarX + offsetX, avatarY + offsetY, drawW, drawH);
+    } else {
+        ctx.fillStyle = '#ccc';
+        ctx.fill();
+    }
+    ctx.restore();
+
+    // Text
+    const textX = x + 200;
+    const textCenterY = y + boxH / 2;
+    const textGap = 15;
+    const primaryHeight = 72 * 0.72; // ~52px
+    const underHeight = 36 * 0.72;   // ~26px
+    const totalHeight = primaryHeight + textGap + underHeight;
+    const blockTopY = textCenterY - (totalHeight / 2);
+
+    ctx.shadowColor = 'transparent';
+    const textOffset = isClicked ? 10 : 0;
+    const drawX = textX + textOffset;
+
+    ctx.textAlign = 'left';
+
+    // Primary Text
+    ctx.fillStyle = isClicked ? subscribedColors.text : ctaColors.text;
+    ctx.font = 'bold 72px Inter, sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText(isClicked ? subscribedText : primaryText, drawX, blockTopY);
+
+    // Under Text
+    ctx.fillStyle = isClicked ? subscribedColors.underText : ctaColors.underText;
+    ctx.font = '36px Inter, sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText(underText, drawX, blockTopY + primaryHeight + textGap);
+
+    // Reset Transform
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // --- Particles (Confetti) ---
+    if (particles.enabled && tMs >= clickTime && tMs < clickTime + 50) {
+        if (particlesRef.current.length === 0) {
+            for (let i = 0; i < particles.count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = (particles.speed * 0.5) + Math.random() * particles.speed;
+                particlesRef.current.push({
+                    x: cx,
+                    y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 5,
+                    life: 1.0,
+                    color: particles.colors[Math.floor(Math.random() * particles.colors.length)],
+                    size: 5 + Math.random() * 10
+                });
+            }
+        }
+    }
+    if (tMs < 100) particlesRef.current = [];
+
+    // Update and Draw Particles
+    if (particlesRef.current.length > 0) {
+        ctx.globalAlpha = 1;
+        particlesRef.current.forEach((p) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.5; // Gravity
+            p.life -= 0.02;
+
+            if (p.life > 0) {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.rect(p.x, p.y, p.size, p.size);
+                ctx.fill();
+            }
+        });
+        particlesRef.current = particlesRef.current.filter(p => p.life > 0);
+    }
+
+    // --- Cursor ---
+    if (cursor.visible && assets.cursor && tMs < (5000 * D)) {
+        let curX = width + 50;
+        let curY = height + 100;
+        let scale = 1;
+
+        const targetX = cx + 200;
+        const targetY = cy + 50;
+
+        const cursorEnterStart = 1000 * D;
+        const cursorClickTime = 2500 * D;
+        const cursorExitStart = 3000 * D;
+
+        if (tMs >= cursorEnterStart && tMs < cursorClickTime) {
+            const t = (tMs - cursorEnterStart) / (1500 * D);
+
+            // Cursor specific ease
+            let ease = Easing.easeOutExpo(t);
+            if (cursor.animationType === 'elastic') ease = Easing.easeOutElastic(t);
+            if (cursor.animationType === 'bounce') ease = Easing.easeOutBounce(t);
+
+            curX = (width) * (1 - ease) + targetX * ease;
+            curY = (height) * (1 - ease) + targetY * ease;
+        } else if (tMs >= cursorClickTime) {
+            curX = targetX;
+            curY = targetY;
+            // Exit
+            if (tMs > cursorExitStart) {
+                const t = (tMs - cursorExitStart) / (1000 * D);
+                const ease = Easing.easeInQuad(t);
+                curY = targetY + (height / 2) * ease;
+                curX = targetX - (100) * ease;
+            }
+        }
+
+        // Click press
+        if (tMs > (cursorClickTime - 100) && tMs < (cursorClickTime + 100)) scale = 0.8;
+
+        // Draw Cursor
+        if (tMs > cursorEnterStart) {
+            ctx.globalAlpha = 1;
+            ctx.filter = 'drop-shadow(2px 2px 2px rgba(0,0,0,0.3))';
+            ctx.translate(curX, curY);
+            ctx.scale(scale, scale);
+            ctx.drawImage(assets.cursor, 0, 0, 32, 32);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.filter = 'none';
+        }
+    }
+};

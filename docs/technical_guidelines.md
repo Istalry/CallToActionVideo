@@ -9,39 +9,44 @@ We will utilize a **Web Application** architecture hosted on GitHub Pages. This 
     -   Type safety is critical for handling media properties and configuration objects.
 -   **Styling**: **TailwindCSS**
     -   Rapid UI development, consistent design system.
--   **Animation & Rendering**: **HTML5 Canvas** (likely via `react-konva` or native API) + `gsap` (GreenSock) or `framer-motion`.
-    -   *Why Canvas?* To ensure frame-perfect export to video, drawing to a Canvas is more reliable than recording DOM elements. We can capture the Canvas stream easily.
-    -   *Tweening*: Support variable durations and easing types (Elastic, Smooth, Bounce).
-    -   *Image Processing*: Calculate aspect ratios to implement "object-fit: cover" behavior manually on Canvas draw calls.
+-   **Animation & Rendering**: **Custom HTML5 Canvas Loop**
+    -   *Implementation*: A custom `renderLoop.ts` handles the `requestAnimationFrame` cycle.
+    -   *State Separation*: Rendering logic is pure and separated from React state (`useStore`).
+    -   *Tweening*: Custom easing functions (`easings.ts`) support `Smooth` (Expo), `Elastic`, and `Bounce` curves.
 -   **Video Export**: `MediaRecorder` API (browser native) capturing the Canvas stream.
-    -   Output: `video/webm; codecs=vp9` (supports transparency).
+    -   Output: `video/webm; codecs=vp9` (supports transparency), falling back to `vp8`.
 
 ## Project Structure
 ```text
 src/
-├── components/        # Reusable UI components (Buttons, Inputs, Panels)
+├── components/        
+│   └── ui/            # Reusable, styled UI atoms (Button, Input, Slider, Section)
 ├── features/
 │   ├── editor/        # The main editor workspace
 │   │   ├── CanvasPreview.tsx  # The visual preview
-│   │   ├── Controls.tsx       # Sidebar controls
+│   │   ├── Controls.tsx       # Sidebar controls (uses ui/ components)
 │   ├── generator/     # Logic for rendering and exporting video
-│   │   ├── renderLoop.ts      # Main animation loop
+│   │   ├── renderLoop.ts      # Pure function handling frame rendering
 │   │   ├── exporter.ts        # MediaRecorder logic
-├── assets/            # Static assets (default icons, specific cursors)
-├── hooks/             # Custom React hooks (useAnimation, useVideoExport)
-├── utils/             # Helper functions (math, file handling)
+│   └── store/
+│       └── useStore.ts    # Global Zustand state
+├── assets/            # Static assets
+├── hooks/             # Custom React hooks (useCanvasRender, useVideoExport)
+├── utils/             # Helper functions (easings.ts)
 ├── types/             # Shared TypeScript interfaces
 ├── App.tsx            # Main entry point
 └── main.tsx
 ```
 
 ## Naming Conventions
--   **Files/Components**: PascalCase (e.g., `CanvasPreview.tsx`, `ExportButton.tsx`).
--   **Functions/Variables**: camelCase (e.g., `startRecording`, `currentUser`).
--   **Constants**: UPPER_SNAKE_CASE (e.g., `DEFAULT_CANVAS_WIDTH`).
--   **CSS Classes**: kebab-case (if custom CSS used), otherwise standard Tailwind classes.
+-   **Components**: PascalCase (e.g., `CanvasPreview.tsx`, `Slider.tsx`).
+-   **Functions/Variables**: camelCase (e.g., `startRecording`, `renderFrame`).
+-   **Constants**: UPPER_SNAKE_CASE (e.g., `DEFAULT_DURATION`).
+-   **CSS Classes**: Standard Tailwind utility classes.
 
 ## Code Quality Rules
--   **Strict Typing**: No `any` types unless absolutely necessary.
--   **Component Purity**: separating rendering logic (Canvas) from state management (React).
--   **Comments**: Document complex animation logic or canvas operations.
+-   **Strict Typing**: Avoid `any`. Use specific interfaces for props and state.
+-   **Component Purity**: 
+    -   UI components (Controls) strictly handle user input and update store.
+    -   Rendering logic (renderLoop) strictly draws based on passed state, with no side effects.
+-   **Performance**: Minimize React re-renders. Canvas updates happen outside the React render cycle via refs where possible.

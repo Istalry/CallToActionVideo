@@ -1,6 +1,11 @@
 import React, { useRef } from 'react';
 import { useStore } from '../../store/useStore';
-import { Settings, Image as ImageIcon, Palette, MousePointer2, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Palette, Settings, Sparkles } from 'lucide-react';
+import { Section } from '../../components/ui/Section';
+import { Input } from '../../components/ui/Input';
+import { Slider } from '../../components/ui/Slider';
+import { ColorPicker } from '../../components/ui/ColorPicker';
+import { Switch } from '../../components/ui/Switch';
 
 export const Controls: React.FC = () => {
     const {
@@ -34,15 +39,10 @@ export const Controls: React.FC = () => {
                 <p className="text-sm text-gray-400">Customize your CTA</p>
             </div>
 
-            <div className="p-4 space-y-8">
+            <div className="">
                 {/* 1. Content & Image */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-medium text-sm border-b border-gray-800 pb-2">
-                        <ImageIcon className="w-4 h-4" />
-                        <h3>Content</h3>
-                    </div>
-
-                    <div className="space-y-3">
+                <Section title="Content" icon={<ImageIcon className="w-4 h-4" />}>
+                    <div className="space-y-4">
                         {/* Image Upload */}
                         <div
                             onClick={() => fileInputRef.current?.click()}
@@ -65,278 +65,224 @@ export const Controls: React.FC = () => {
                         {/* Image Adjustments */}
                         {imageUrl && (
                             <div className="grid grid-cols-3 gap-2">
-                                <div>
-                                    <label className="text-[10px] uppercase text-gray-500">Scale</label>
-                                    <input
-                                        type="number" step="0.1"
-                                        value={imageTransform.scale}
-                                        onChange={(e) => setImageTransform({ scale: parseFloat(e.target.value) })}
-                                        className="w-full bg-background border border-gray-700 rounded px-1 py-1 text-xs text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] uppercase text-gray-500">Pos X</label>
-                                    <input
-                                        type="number"
-                                        value={imageTransform.x}
-                                        onChange={(e) => setImageTransform({ x: parseFloat(e.target.value) })}
-                                        className="w-full bg-background border border-gray-700 rounded px-1 py-1 text-xs text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] uppercase text-gray-500">Pos Y</label>
-                                    <input
-                                        type="number"
-                                        value={imageTransform.y}
-                                        onChange={(e) => setImageTransform({ y: parseFloat(e.target.value) })}
-                                        className="w-full bg-background border border-gray-700 rounded px-1 py-1 text-xs text-white"
-                                    />
-                                </div>
+                                <Input
+                                    label="Scale"
+                                    type="number" step="0.1"
+                                    value={imageTransform.scale}
+                                    onChange={(e) => setImageTransform({ scale: parseFloat(e.target.value) })}
+                                />
+                                <Input
+                                    label="Pos X"
+                                    type="number"
+                                    value={imageTransform.x}
+                                    onChange={(e) => setImageTransform({ x: parseFloat(e.target.value) })}
+                                />
+                                <Input
+                                    label="Pos Y"
+                                    type="number"
+                                    value={imageTransform.y}
+                                    onChange={(e) => setImageTransform({ y: parseFloat(e.target.value) })}
+                                />
                             </div>
                         )}
 
-                        <div className="space-y-2 pt-2">
-                            <input
-                                type="text"
+                        <div className="space-y-2">
+                            <Input
                                 value={primaryText}
                                 onChange={(e) => setPrimaryText(e.target.value)}
-                                className="w-full bg-background border border-gray-700 rounded px-3 py-2 text-sm focus:border-primary focus:outline-none text-white"
                                 placeholder="Header Text"
                             />
-                            <input
-                                type="text"
+                            <Input
                                 value={underText}
                                 onChange={(e) => setUnderText(e.target.value)}
-                                className="w-full bg-background border border-gray-700 rounded px-3 py-2 text-sm focus:border-primary focus:outline-none text-white"
                                 placeholder="Sub-text"
                             />
                         </div>
-                    </div>
-                    {/* Subscribed Text Config */}
-                    <div className="space-y-2 pt-2 border-t border-gray-800">
-                        <h4 className="text-[10px] uppercase text-gray-500 font-bold">Subscribed Content</h4>
-                        <input
-                            type="text"
-                            value={subscribedText}
-                            onChange={(e) => setSubscribedText(e.target.value)}
-                            className="w-full bg-background border border-gray-700 rounded px-3 py-2 text-sm focus:border-primary focus:outline-none text-white"
-                            placeholder="Subscribed Text"
-                        />
-                    </div>
-                </div>
 
-                {/* 2. Colors */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-medium text-sm border-b border-gray-800 pb-2">
-                        <Palette className="w-4 h-4" />
-                        <h3>Appearance</h3>
+                        <div className="pt-2 border-t border-gray-800">
+                            <Input
+                                label="Subscribed Text"
+                                value={subscribedText}
+                                onChange={(e) => setSubscribedText(e.target.value)}
+                                placeholder="Subscribed Text"
+                            />
+                        </div>
                     </div>
+                </Section>
 
-                    {/* Initial State */}
-                    <div className="space-y-2">
-                        <h4 className="text-[10px] uppercase text-gray-500 font-bold">Initial State</h4>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                                <label className="text-[10px] text-gray-400 block">Background</label>
-                                <input
-                                    type="color"
+                {/* 2. Appearance */}
+                <Section title="Appearance" icon={<Palette className="w-4 h-4" />}>
+                    <div className="space-y-4">
+                        <div>
+                            <h4 className="text-[10px] uppercase text-gray-500 font-bold mb-2">Initial State</h4>
+                            <div className="grid grid-cols-3 gap-2">
+                                <ColorPicker
+                                    label="Bg"
                                     value={ctaColors.background}
                                     onChange={(e) => setCtaColors({ background: e.target.value })}
-                                    className="w-full h-8 rounded cursor-pointer bg-transparent"
                                 />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] text-gray-400 block">Text</label>
-                                <input
-                                    type="color"
+                                <ColorPicker
+                                    label="Text"
                                     value={ctaColors.text}
                                     onChange={(e) => setCtaColors({ text: e.target.value })}
-                                    className="w-full h-8 rounded cursor-pointer bg-transparent"
                                 />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] text-gray-400 block">Sub-text</label>
-                                <input
-                                    type="color"
+                                <ColorPicker
+                                    label="Sub"
                                     value={ctaColors.underText}
                                     onChange={(e) => setCtaColors({ underText: e.target.value })}
-                                    className="w-full h-8 rounded cursor-pointer bg-transparent"
                                 />
                             </div>
-
                         </div>
-                    </div>
 
-                    {/* Subscribed State */}
-                    <div className="space-y-2 pt-2 border-t border-gray-800">
-                        <h4 className="text-[10px] uppercase text-gray-500 font-bold">Subscribed State</h4>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                                <label className="text-[10px] text-gray-400 block">Background</label>
-                                <input
-                                    type="color"
+                        <div className="pt-2 border-t border-gray-800">
+                            <h4 className="text-[10px] uppercase text-gray-500 font-bold mb-2">Subscribed State</h4>
+                            <div className="grid grid-cols-3 gap-2">
+                                <ColorPicker
+                                    label="Bg"
                                     value={subscribedColors.background}
                                     onChange={(e) => setSubscribedColors({ background: e.target.value })}
-                                    className="w-full h-8 rounded cursor-pointer bg-transparent"
                                 />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] text-gray-400 block">Text</label>
-                                <input
-                                    type="color"
+                                <ColorPicker
+                                    label="Text"
                                     value={subscribedColors.text}
                                     onChange={(e) => setSubscribedColors({ text: e.target.value })}
-                                    className="w-full h-8 rounded cursor-pointer bg-transparent"
                                 />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] text-gray-400 block">Sub-text</label>
-                                <input
-                                    type="color"
+                                <ColorPicker
+                                    label="Sub"
                                     value={subscribedColors.underText}
                                     onChange={(e) => setSubscribedColors({ underText: e.target.value })}
-                                    className="w-full h-8 rounded cursor-pointer bg-transparent"
                                 />
                             </div>
+                        </div>
 
+                        <div className="pt-2">
+                            <Slider
+                                label="Roundness"
+                                valueDisplay={`${roundness}px`}
+                                min="0" max="100"
+                                value={roundness}
+                                onChange={(e) => setRoundness(parseInt(e.target.value))}
+                            />
                         </div>
                     </div>
-
-                    <div className="space-y-1 pt-2">
-                        <div className="flex items-center justify-between">
-                            <label className="text-xs text-gray-400">Roundness</label>
-                            <span className="text-[10px] text-gray-500">{roundness}px</span>
-                        </div>
-                        <input
-                            type="range" min="0" max="100"
-                            value={roundness}
-                            onChange={(e) => setRoundness(parseInt(e.target.value))}
-                            className="w-full accent-primary"
-                        />
-                    </div>
-                </div>
+                </Section>
 
                 {/* 3. Animation */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-medium text-sm border-b border-gray-800 pb-2">
-                        <Settings className="w-4 h-4" />
-                        <h3>Animation</h3>
-                    </div>
-
-                    <div className="space-y-3">
+                <Section title="Animation" icon={<Settings className="w-4 h-4" />}>
+                    <div className="space-y-4">
                         <div className="flex gap-2">
-                            <select
-                                value={animation.type}
-                                onChange={(e) => setAnimation({ type: e.target.value as any })}
-                                className="flex-1 bg-background border border-gray-700 rounded px-2 py-1 text-sm text-white"
-                            >
-                                <option value="smooth">Smooth</option>
-                                <option value="elastic">Elastic</option>
-                                <option value="bounce">Bounce</option>
-                            </select>
-                            <div className="flex items-center gap-1 bg-background border border-gray-700 rounded px-2">
-                                <span className="text-xs text-gray-400">Dur:</span>
-                                <input
+                            <div className="flex-1 space-y-1">
+                                <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Type</label>
+                                <select
+                                    value={animation.type}
+                                    onChange={(e) => setAnimation({ type: e.target.value as 'smooth' | 'elastic' | 'bounce' })}
+                                    className="w-full bg-background border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-primary h-[34px]"
+                                >
+                                    <option value="smooth">Smooth</option>
+                                    <option value="elastic">Elastic</option>
+                                    <option value="bounce">Bounce</option>
+                                </select>
+                            </div>
+                            <div className="w-20">
+                                <Input
                                     type="number" step="0.1" min="0.5" max="3.0"
                                     value={animation.duration}
                                     onChange={(e) => setAnimation({ duration: parseFloat(e.target.value) })}
-                                    className="w-12 bg-transparent text-sm text-white focus:outline-none"
+                                    label="Multi"
+                                    className="py-1"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex gap-4">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={animation.position}
-                                    onChange={(e) => setAnimation({ position: e.target.checked })}
-                                    className="rounded border-gray-700 bg-background text-primary"
-                                />
-                                <span className="text-xs text-gray-300">Pos</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={animation.scale}
-                                    onChange={(e) => setAnimation({ scale: e.target.checked })}
-                                    className="rounded border-gray-700 bg-background text-primary"
-                                />
-                                <span className="text-xs text-gray-300">Scale</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={animation.opacity}
-                                    onChange={(e) => setAnimation({ opacity: e.target.checked })}
-                                    className="rounded border-gray-700 bg-background text-primary"
-                                />
-                                <span className="text-xs text-gray-300">Fade</span>
-                            </label>
+                        <div className="space-y-2">
+                            <Switch
+                                label="Animate Position"
+                                checked={animation.position}
+                                onChange={(e) => setAnimation({ position: e.target.checked })}
+                            />
+                            <Switch
+                                label="Animate Scale"
+                                checked={animation.scale}
+                                onChange={(e) => setAnimation({ scale: e.target.checked })}
+                            />
+                            <Switch
+                                label="Animate Opacity"
+                                checked={animation.opacity}
+                                onChange={(e) => setAnimation({ opacity: e.target.checked })}
+                            />
                         </div>
 
-                        <div className="flex items-center justify-between pt-2">
-                            <span className="text-sm text-gray-300 flex items-center gap-2">
-                                <MousePointer2 className="w-3 h-3" /> Show Cursor
-                            </span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="sr-only peer"
-                                    checked={cursor.visible}
-                                    onChange={(e) => setCursor({ visible: e.target.checked })}
-                                />
-                                <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                            </label>
+                        <div className="pt-2 border-t border-gray-800">
+                            <Switch
+                                label="Show Cursor"
+                                checked={cursor.visible}
+                                onChange={(e) => setCursor({ visible: e.target.checked })}
+                            />
+                            {cursor.visible && (
+                                <div className="flex items-center gap-2 mt-2">
+                                    <label className="text-[10px] text-gray-400">Motion</label>
+                                    <select
+                                        value={cursor.animationType}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCursor({ animationType: e.target.value as 'smooth' | 'elastic' | 'bounce' })}
+                                        className="bg-background border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-primary"
+                                    >
+                                        <option value="smooth">Smooth</option>
+                                        <option value="elastic">Elastic</option>
+                                        <option value="bounce">Bounce</option>
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     </div>
-                </div>
+                </Section>
 
                 {/* 4. Particles */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-medium text-sm border-b border-gray-800 pb-2">
-                        <Sparkles className="w-4 h-4" />
-                        <h3>Particles</h3>
-                    </div>
+                <Section title="Particles" icon={<Sparkles className="w-4 h-4" />}>
+                    <div className="space-y-4">
+                        <Switch
+                            label="Enabled"
+                            checked={particles.enabled}
+                            onChange={(e) => setParticles({ enabled: e.target.checked })}
+                        />
 
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-400">Count</span>
-                            <input
-                                type="range" min="0" max="400"
-                                value={particles.count}
-                                onChange={(e) => setParticles({ count: parseInt(e.target.value) })}
-                                className="w-32 accent-primary"
-                            />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-400">Speed</span>
-                            <input
-                                type="range" min="1" max="20"
-                                value={particles.speed}
-                                onChange={(e) => setParticles({ speed: parseInt(e.target.value) })}
-                                className="w-32 accent-primary"
-                            />
-                        </div>
-
-                        <div className="flex gap-1 flex-wrap">
-                            {particles.colors.map((color, i) => (
-                                <input
-                                    key={i}
-                                    type="color"
-                                    value={color}
-                                    onChange={(e) => {
-                                        const newColors = [...particles.colors];
-                                        newColors[i] = e.target.value;
-                                        setParticles({ colors: newColors });
-                                    }}
-                                    className="w-6 h-6 rounded-full cursor-pointer bg-transparent p-0 border-none"
+                        {particles.enabled && (
+                            <>
+                                <Slider
+                                    label="Count"
+                                    valueDisplay={particles.count}
+                                    min="0" max="400"
+                                    value={particles.count}
+                                    onChange={(e) => setParticles({ count: parseInt(e.target.value) })}
                                 />
-                            ))}
-                        </div>
+                                <Slider
+                                    label="Speed"
+                                    valueDisplay={particles.speed}
+                                    min="1" max="20"
+                                    value={particles.speed}
+                                    onChange={(e) => setParticles({ speed: parseInt(e.target.value) })}
+                                />
+                                <div>
+                                    <label className="text-xs text-gray-400 mb-2 block">Colors</label>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {particles.colors.map((color, i) => (
+                                            <div key={i} className="relative group">
+                                                <ColorPicker
+                                                    value={color}
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                        const newColors = [...particles.colors];
+                                                        newColors[i] = e.target.value;
+                                                        setParticles({ colors: newColors });
+                                                    }}
+                                                    className="!w-8 !h-8 rounded-full !p-0 !border-2 border-white/10 overflow-hidden"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
-                </div>
-
+                </Section>
             </div>
         </div>
     );

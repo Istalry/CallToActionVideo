@@ -4,36 +4,41 @@
 The application should feel **"Premium, Modern, and Dynamic"**. It is a creative tool, so the interface itself should inspire creativity.
 
 ## Visual Identity
--   **Theme**: Dark Mode default (preferred for video editing tools).
+-   **Theme**: Dark Mode default.
 -   **Palette**:
-    -   **Background**: Deep rich grays/blacks (e.g., `#121212`, `#1E1E1E`).
-    -   **Accents**: Vibrant, electric colors (Neon Purple, Cyber Blue, Hot Pink) to guide user action and highlight active states. Users can customize CTA colors via a color wheel.
-    -   **Glassmorphism**: Use subtle translucent layers with backdrop blur for panels and overlays.
-    -   **Images**: User uploaded images must support "cover" fitting to avoid stretching, with optional manual adjustments (scale/position).
+    -   **Background**: Deep rich grays/blacks (`#121212`, `#1E1E1E`).
+    -   **Accents**: Vibrant, electric colors (Neon Purple) to guide user action.
+    -   **Surface**: Card-like surfaces with subtle borders (`border-gray-800`).
 -   **Typography**:
-    -   Primary: **Inter** or **Outfit** (Clean, geometric, modern).
-    -   Headings: Bold, distinct weight.
+    -   Primary: **Inter** or **Outfit**.
+    -   Text Sizes: Small, dense controls (12px-14px) to maximize screen real estate.
 
 ## UI Components
--   **Input Fields**: Minimalist, no heavy borders. Underline or filled background with subtle focus glow.
--   **Buttons**:
-    -   *Primary (Export)*: Gradient background, slight glow/shadow.
-    -   *Secondary*: Ghost or outlined.
--   **Preview Area**: The canvas should be the "hero". Centered, with a checkerboard background (to show transparency).
+-   **Sidebar Controls**:
+    -   Grouped into collapsible **Sections** (Content, Appearance, Animation, Particles).
+    -   **Inputs**: Dark background, light border on focus.
+    -   **Sliders**: Custom styled with linear-gradient fill to visualize value intensity.
+    -   **Color Pickers**: Circular, distinct hit-areas.
+-   **Preview Area**: 
+    -   Centered Canvas.
+    -   Checkerboard pattern background to clearly indicate transparency.
 
 ## User Experience (UX) Flow
-1.  **Landing**: Immediate access to the editor. No login wall.
-2.  **Editing**:
-    -   **Left Panel**: Configuration (Text, Images, Colors). Changes reflect *instantly* in the preview.
-    -   **Center**: Live Preview (Looping animation).
-    -   **Right Panel (Optional)**: Presets or Advanced Settings.
-    -   **Bottom/Top**: specific animation timeline or simple "Play/Pause" controls.
+1.  **Configuration**:
+    -   Users adjust settings in the sidebar.
+    -   Changes reflect *instantly* in the preview loop.
+2.  **Animation Control**:
+    -   **Motion Type**: Select between Smooth, Elastic, and Bounce curves.
+    -   **Cursor**: Independent control for cursor motion smoothing.
 3.  **Export**:
-    -   A prominent "Export Video" button.
-    -   Show a progress loading state during rendering/recording.
-    -   Auto-download the file upon completion.
+    -   Prominent "Export" button.
+    -   Handles browser-native file saving (File System Access API where supported).
 
 ## Animation Rules (For the CTA itself)
--   **Easing**: All movements must use smooth easing (e.g., `easeOutExpo`, `easeInOutBack`). No linear mechanical movements.
--   **Timing**: The entire animation should be short (5-10 seconds max).
--   **Attention**: Use "pop" effects or subtle scales to draw the eye to the Subscribe button before the click happens.
+-   **Easing**: Default to smooth easing (`easeOutExpo`). Optional `Elastic` and `Bounce` for more playful brands.
+-   **Timing**: The entire animation loop is effectively 6 seconds.
+-   **Attention**:
+    -   Entrance: Smooth slide/fade in.
+    -   Interaction: Cursor simulates a realistic click.
+    -   Reaction: Button scaling/color change upon click.
+    -   Exit: Clean slide out.

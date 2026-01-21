@@ -16,7 +16,7 @@ export interface CTAState {
         scale: boolean;
         opacity: boolean;
     };
-    cursor: { visible: boolean };
+    cursor: { visible: boolean; animationType: 'smooth' | 'elastic' | 'bounce' };
     particles: { enabled: boolean; count: number; speed: number; colors: string[] };
 
     subscribedText: string;
@@ -37,7 +37,7 @@ export interface CTAState {
         scale: boolean;
         opacity: boolean;
     }>) => void;
-    setCursor: (cursor: { visible: boolean }) => void;
+    setCursor: (cursor: Partial<{ visible: boolean; animationType: 'smooth' | 'elastic' | 'bounce' }>) => void;
     setParticles: (particles: Partial<{ enabled: boolean; count: number; speed: number; colors: string[] }>) => void;
 }
 
@@ -66,7 +66,7 @@ export const useStore = create<CTAState>((set) => ({
         scale: true,
         opacity: true
     },
-    cursor: { visible: true },
+    cursor: { visible: true, animationType: 'smooth' },
     particles: {
         enabled: true,
         count: 50,
@@ -84,6 +84,6 @@ export const useStore = create<CTAState>((set) => ({
     setSubscribedColors: (colors) => set((state) => ({ subscribedColors: { ...state.subscribedColors, ...colors } })),
     setFormat: (format) => set({ format: format }),
     setAnimation: (anim) => set((state) => ({ animation: { ...state.animation, ...anim } })),
-    setCursor: (cursor) => set({ cursor }),
+    setCursor: (cursor) => set((state) => ({ cursor: { ...state.cursor, ...cursor } })),
     setParticles: (particles) => set((state) => ({ particles: { ...state.particles, ...particles } })),
 }));
