@@ -13,7 +13,8 @@ export const Controls: React.FC = () => {
         roundness, setRoundness,
         animation, setAnimation,
         cursor, setCursor,
-        particles, setParticles
+        particles, setParticles,
+        subscribedText, setSubscribedText
     } = useStore();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,6 +111,17 @@ export const Controls: React.FC = () => {
                                 placeholder="Sub-text"
                             />
                         </div>
+                    </div>
+                    {/* Subscribed Text Config */}
+                    <div className="space-y-2 pt-2 border-t border-gray-800">
+                        <h4 className="text-[10px] uppercase text-gray-500 font-bold">Subscribed Content</h4>
+                        <input
+                            type="text"
+                            value={subscribedText}
+                            onChange={(e) => setSubscribedText(e.target.value)}
+                            className="w-full bg-background border border-gray-700 rounded px-3 py-2 text-sm focus:border-primary focus:outline-none text-white"
+                            placeholder="Subscribed Text"
+                        />
                     </div>
                 </div>
 

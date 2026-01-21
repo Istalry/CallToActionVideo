@@ -19,8 +19,11 @@ export interface CTAState {
     cursor: { visible: boolean };
     particles: { enabled: boolean; count: number; speed: number; colors: string[] };
 
+    subscribedText: string;
+
     setPrimaryText: (text: string) => void;
     setUnderText: (text: string) => void;
+    setSubscribedText: (text: string) => void;
     setImageUrl: (url: string | null) => void;
     setImageTransform: (transform: Partial<{ scale: number; x: number; y: number }>) => void;
     setRoundness: (roundness: number) => void;
@@ -41,6 +44,7 @@ export interface CTAState {
 export const useStore = create<CTAState>((set) => ({
     primaryText: 'Subscribe',
     underText: 'twitch.tv/mychannel',
+    subscribedText: 'SUBSCRIBED',
     imageUrl: null,
     imageTransform: { scale: 1, x: 0, y: 0 },
     ctaColors: {
@@ -72,6 +76,7 @@ export const useStore = create<CTAState>((set) => ({
 
     setPrimaryText: (text) => set({ primaryText: text }),
     setUnderText: (text) => set({ underText: text }),
+    setSubscribedText: (text) => set({ subscribedText: text }),
     setImageUrl: (url) => set({ imageUrl: url }),
     setImageTransform: (transform) => set((state) => ({ imageTransform: { ...state.imageTransform, ...transform } })),
     setRoundness: (roundness) => set({ roundness }),

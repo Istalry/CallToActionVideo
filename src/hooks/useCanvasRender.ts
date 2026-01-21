@@ -14,7 +14,7 @@ interface Particle {
 }
 
 export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
-    const { primaryText, underText, format, imageUrl, imageTransform, ctaColors, subscribedColors, roundness, animation, cursor, particles } = useStore();
+    const { primaryText, underText, subscribedText, format, imageUrl, imageTransform, ctaColors, subscribedColors, roundness, animation, cursor, particles } = useStore();
     const animationRef = useRef<number>(0);
     const imageRef = useRef<HTMLImageElement | null>(null);
     const cursorRef = useRef<HTMLImageElement | null>(null);
@@ -214,7 +214,7 @@ export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | n
             ctx.fillStyle = isClicked ? subscribedColors.text : ctaColors.text;
             ctx.font = 'bold 72px Inter, sans-serif';
             ctx.textBaseline = 'top'; // Easier to control with top baseline logic
-            ctx.fillText(isClicked ? "SUBSCRIBED" : primaryText, drawX, blockTopY);
+            ctx.fillText(isClicked ? subscribedText : primaryText, drawX, blockTopY);
 
             // Under Text
             ctx.fillStyle = isClicked ? subscribedColors.underText : ctaColors.underText;
@@ -319,5 +319,5 @@ export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | n
         return () => {
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
-    }, [primaryText, underText, format, imageUrl, imageTransform, ctaColors, roundness, animation, cursor, particles]);
+    }, [primaryText, underText, subscribedText, format, imageUrl, imageTransform, ctaColors, subscribedColors, roundness, animation, cursor, particles]);
 };
