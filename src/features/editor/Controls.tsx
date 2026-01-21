@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useStore } from '../../store/useStore';
-import { Image as ImageIcon, Palette, Settings, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Palette, Settings, Sparkles, Download } from 'lucide-react';
 import { Section } from '../../components/ui/Section';
 import { Input } from '../../components/ui/Input';
 import { Slider } from '../../components/ui/Slider';
@@ -19,7 +19,9 @@ export const Controls: React.FC = () => {
         animation, setAnimation,
         cursor, setCursor,
         particles, setParticles,
-        subscribedText, setSubscribedText
+        subscribedText, setSubscribedText,
+        resolution, setResolution,
+        superSampling, setSuperSampling
     } = useStore();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -399,6 +401,40 @@ export const Controls: React.FC = () => {
                                 </div>
                             </>
                         )}
+                    </div>
+                </Section>
+
+                {/* 5. Output Settings */}
+                <Section title="Output Settings" icon={<Download className="w-4 h-4" />}>
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Resolution</label>
+                            <select
+                                value={resolution}
+                                onChange={(e) => setResolution(e.target.value as any)}
+                                className="w-full bg-background border border-gray-700 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-primary h-[34px]"
+                            >
+                                <option value="480p">480p (SD)</option>
+                                <option value="720p">720p (HD)</option>
+                                <option value="1080p">1080p (Full HD)</option>
+                                <option value="2k">2K (QHD)</option>
+                                <option value="4k">4K (UHD)</option>
+                            </select>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm text-gray-300">Antialiasing (2x Supersampling)</label>
+                            <div
+                                className={`w-10 h-6 rounded-full p-1 cursor-pointer transition-colors ${superSampling === 2 ? 'bg-primary' : 'bg-gray-700'}`}
+                                onClick={() => setSuperSampling(superSampling === 2 ? 1 : 2)}
+                            >
+                                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${superSampling === 2 ? 'translate-x-4' : ''}`} />
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-gray-500">
+                            Exports at higher resolution and scales down for smoother edges.
+                            {superSampling === 2 && ' (Output will be ' + (resolution === '4k' ? '8K' : 'Double Resolution') + ' internal)'}
+                        </p>
                     </div>
                 </Section>
             </div>

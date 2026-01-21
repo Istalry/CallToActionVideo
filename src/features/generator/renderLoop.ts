@@ -28,7 +28,8 @@ export const renderFrame = (
     time: number,
     state: CTAState,
     assets: RenderAssets,
-    particlesRef: React.MutableRefObject<Particle[]>
+    particlesRef: React.MutableRefObject<Particle[]>,
+    scale: number = 1
 ) => {
     const {
         primaryText, underText, subscribedText,
@@ -38,6 +39,10 @@ export const renderFrame = (
     } = state;
 
     ctx.clearRect(0, 0, width, height);
+
+    // Apply Global Scale
+    ctx.save();
+    ctx.scale(scale, scale);
 
     // --- Timeline ---
     const D = animation.duration;
@@ -81,11 +86,11 @@ export const renderFrame = (
     // Context Setup
     ctx.globalAlpha = boxOpacity;
 
-    // Box Dimensions
+    // Box Dimensions (Logical)
     const boxW = format === 'landscape' ? 800 : 700;
     const boxH = 200;
-    const cx = width / 2;
-    const cy = height / 2 + boxYOffset;
+    const cx = (width / scale) / 2; // Use logical center
+    const cy = (height / scale) / 2 + boxYOffset;
 
     const x = cx - boxW / 2;
     const y = cy - boxH / 2;
@@ -152,13 +157,13 @@ export const renderFrame = (
         }
 
         // Apply manual transform
-        const scale = imageTransform.scale;
+        const transformScale = imageTransform.scale;
         const tx = imageTransform.x;
         const ty = imageTransform.y;
 
         // Transform context center of avatar
         ctx.translate(avatarX + avatarSize / 2, avatarY + avatarSize / 2);
-        ctx.scale(scale, scale);
+        ctx.scale(transformScale, transformScale);
         ctx.translate(tx, ty);
         ctx.translate(-(avatarX + avatarSize / 2), -(avatarY + avatarSize / 2));
 
@@ -196,8 +201,8 @@ export const renderFrame = (
     ctx.textBaseline = 'top';
     ctx.fillText(underText, drawX, blockTopY + primaryHeight + textGap);
 
-    // Reset Transform
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // Reset Transform (Preserve Global Scale)
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
 
     // --- Particles (Confetti) ---
     if (particles.enabled && tMs >= clickTime && tMs < clickTime + 50) {
@@ -286,9 +291,9 @@ export const renderFrame = (
 
     // --- Cursor ---
     if (cursor.visible && assets.cursor && tMs < (5000 * D)) {
-        let curX = width + 50;
-        let curY = height + 100;
-        let scale = 1;
+        let curX = (width / scale) + 50; // Logical width + offset
+        let curY = (height / scale) + 100; // Logical height + offset
+        let cursorScale = 1;
 
         const targetX = cx + 200;
         const targetY = cy + 50;
@@ -305,8 +310,8 @@ export const renderFrame = (
             if (cursor.animationType === 'elastic') ease = Easing.easeOutElastic(t);
             if (cursor.animationType === 'bounce') ease = Easing.easeOutBounce(t);
 
-            curX = (width) * (1 - ease) + targetX * ease;
-            curY = (height) * (1 - ease) + targetY * ease;
+            curX = (width / scale) * (1 - ease) + targetX * ease;
+            curY = (height / scale) * (1 - ease) + targetY * ease;
         } else if (tMs >= cursorClickTime) {
             curX = targetX;
             curY = targetY;
@@ -320,17 +325,20 @@ export const renderFrame = (
         }
 
         // Click press
-        if (tMs > (cursorClickTime - 100) && tMs < (cursorClickTime + 100)) scale = 0.8;
+        if (tMs > (cursorClickTime - 100) && tMs < (cursorClickTime + 100)) cursorScale = 0.8;
 
         // Draw Cursor
         if (tMs > cursorEnterStart) {
             ctx.globalAlpha = 1;
             ctx.filter = 'drop-shadow(2px 2px 2px rgba(0,0,0,0.3))';
             ctx.translate(curX, curY);
-            ctx.scale(scale, scale);
+            ctx.scale(cursorScale, cursorScale);
             ctx.drawImage(assets.cursor, 0, 0, 32, 32);
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.setTransform(scale, 0, 0, scale, 0, 0); // Restore to Global Scale
             ctx.filter = 'none';
         }
     }
+
+    // Restore initial state (cleanup)
+    ctx.restore();
 };

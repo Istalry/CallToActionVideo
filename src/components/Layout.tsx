@@ -15,7 +15,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <h1 className="font-bold text-xl tracking-tight">CTA Generator</h1>
                 </div>
                 <div className="ml-auto flex items-center gap-4">
-                    <a href="https://github.com/StartinRP/CallToActionVideo" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors">
+                    <a href="https://github.com/Istalry/CallToActionVideo" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors">
                         GitHub
                     </a>
                 </div>

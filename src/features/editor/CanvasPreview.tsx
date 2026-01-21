@@ -1,18 +1,18 @@
 import React, { useRef } from 'react';
 import { useStore } from '../../store/useStore';
 import { useCanvasRender } from '../../hooks/useCanvasRender';
-import { useVideoExport } from '../../hooks/useVideoExport';
-import { Loader2, Download } from 'lucide-react';
+import { useOfflineExport } from '../../hooks/useOfflineExport';
+import { Loader2, Video } from 'lucide-react';
 
 export const CanvasPreview: React.FC = () => {
     const { format, setFormat } = useStore();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    // Initialize render loop
-    useCanvasRender(canvasRef);
+    // Initialize render loop AND get access to loaded assets
+    const { assets } = useCanvasRender(canvasRef) as any; // Temporary cast to fix build until hook types are perfected
 
     // Export logic
-    const { isRecording, startRecording } = useVideoExport(canvasRef);
+    const { isExporting, progress, startOfflineExport } = useOfflineExport();
 
     return (
         <div className="flex-1 bg-[#101010] relative flex flex-col overflow-hidden">
@@ -35,26 +35,36 @@ export const CanvasPreview: React.FC = () => {
                     </div>
                 </div>
                 <button
-                    onClick={() => !isRecording && startRecording(5000)}
-                    disabled={isRecording}
+                    onClick={() => !isExporting && startOfflineExport(assets)}
+                    disabled={isExporting}
                     className={`
                 bg-primary hover:bg-primary-hover text-white px-4 py-1.5 rounded text-sm font-medium transition-colors shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center gap-2
-                ${isRecording ? 'opacity-50 cursor-not-allowed' : ''}
+                ${isExporting ? 'opacity-50 cursor-not-allowed' : ''}
             `}
                 >
-                    {isRecording ? (
+                    {isExporting ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Recording...</span>
+                            <span>{Math.round(progress)}%</span>
                         </>
                     ) : (
                         <>
-                            <Download className="w-4 h-4" />
-                            <span>Export WebM</span>
+                            <Video className="w-4 h-4" />
+                            <span>Export Video</span>
                         </>
                     )}
                 </button>
             </div>
+
+            {/* Progress Bar Overlay */}
+            {isExporting && (
+                <div className="absolute top-0 left-0 w-full h-1 z-50 bg-gray-800">
+                    <div
+                        className="h-full bg-primary transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(139,92,246,0.8)]"
+                        style={{ width: `${progress}%` }}
+                    />
+                </div>
+            )}
 
             {/* Canvas Area */}
             <div className="flex-1 min-h-0 flex items-center justify-center p-8 overflow-hidden bg-checkerboard cursor-zoom-in">
@@ -68,8 +78,6 @@ export const CanvasPreview: React.FC = () => {
                 >
                     <canvas
                         ref={canvasRef}
-                        width={format === 'landscape' ? 1920 : 1080}
-                        height={format === 'landscape' ? 1080 : 1920}
                         className="w-full h-full object-contain block"
                     />
                 </div>

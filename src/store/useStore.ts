@@ -71,6 +71,12 @@ export interface CTAState {
         image: string | null;
         colors: string[];
     }>) => void;
+
+    // Output Settings
+    resolution: '480p' | '720p' | '1080p' | '2k' | '4k';
+    superSampling: 1 | 2;
+    setResolution: (res: '480p' | '720p' | '1080p' | '2k' | '4k') => void;
+    setSuperSampling: (ss: 1 | 2) => void;
 }
 
 export const useStore = create<CTAState>((set) => ({
@@ -93,7 +99,7 @@ export const useStore = create<CTAState>((set) => ({
     format: 'landscape',
     animation: {
         type: 'elastic',
-        duration: 1.0, // Multiplier (1 = 6s total, or we can use specific duration) -> Let's treat valid duration as entrance duration in seconds
+        duration: 1.0,
         position: true,
         scale: true,
         opacity: true
@@ -117,6 +123,9 @@ export const useStore = create<CTAState>((set) => ({
         colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#8b5cf6']
     },
 
+    resolution: '1080p',
+    superSampling: 1,
+
     setPrimaryText: (text) => set({ primaryText: text }),
     setUnderText: (text) => set({ underText: text }),
     setSubscribedText: (text) => set({ subscribedText: text }),
@@ -129,4 +138,6 @@ export const useStore = create<CTAState>((set) => ({
     setAnimation: (anim) => set((state) => ({ animation: { ...state.animation, ...anim } })),
     setCursor: (cursor) => set((state) => ({ cursor: { ...state.cursor, ...cursor } })),
     setParticles: (particles) => set((state) => ({ particles: { ...state.particles, ...particles } })),
+    setResolution: (res) => set({ resolution: res }),
+    setSuperSampling: (ss) => set({ superSampling: ss }),
 }));
