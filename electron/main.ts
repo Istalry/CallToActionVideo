@@ -22,7 +22,10 @@ function createMainWindow(): void {
             contextIsolation: true,
             sandbox: false
         },
+        autoHideMenuBar: true, // Hide the default menu bar
     });
+
+    mainWindow.setMenu(null); // Completely remove the menu bar
 
     // Test active push message to Reference loading logic
     if (process.env.VITE_DEV_SERVER_URL) {

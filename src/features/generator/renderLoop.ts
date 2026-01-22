@@ -6,6 +6,7 @@ export interface RenderAssets {
     image: HTMLImageElement | null;
     cursor: HTMLImageElement | null;
     particleImage: HTMLImageElement | null;
+    scratchCanvas: HTMLCanvasElement | OffscreenCanvas | null; // Added scratch canvas for tinting
 }
 
 export interface Particle {
@@ -268,7 +269,36 @@ export const renderFrame = (
                 if (particles.shape === 'image' && assets.particleImage) {
                     // Draw Image
                     const size = p.size * 2;
-                    ctx.drawImage(assets.particleImage, -size / 2, -size / 2, size, size);
+                    let drawSource: CanvasImageSource = assets.particleImage;
+
+                    // Apply Tinting if scratch canvas is available
+                    if (assets.scratchCanvas) {
+                        const scratchCtx = assets.scratchCanvas.getContext('2d');
+                        if (scratchCtx) {
+                            // Clear scratch canvas
+                            assets.scratchCanvas.width = size; // Resize to fit particle (optimization: could be fixed size if particles are similar)
+                            assets.scratchCanvas.height = size;
+
+                            // Draw the image
+                            scratchCtx.drawImage(assets.particleImage, 0, 0, size, size);
+
+                            // Composite the color (Multiply to preserve nuance)
+                            scratchCtx.globalCompositeOperation = 'multiply';
+                            scratchCtx.fillStyle = p.color;
+                            scratchCtx.fillRect(0, 0, size, size);
+
+                            // Restore alpha using destination-in (clips back to original image alpha)
+                            scratchCtx.globalCompositeOperation = 'destination-in';
+                            scratchCtx.drawImage(assets.particleImage, 0, 0, size, size);
+
+                            // Reset composite mode
+                            scratchCtx.globalCompositeOperation = 'source-over';
+
+                            drawSource = assets.scratchCanvas;
+                        }
+                    }
+
+                    ctx.drawImage(drawSource, -size / 2, -size / 2, size, size);
                 } else if (particles.shape === 'circle') {
                     // Draw Circle
                     ctx.fillStyle = p.color;
