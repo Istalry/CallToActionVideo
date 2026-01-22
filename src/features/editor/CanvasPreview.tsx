@@ -8,11 +8,11 @@ export const CanvasPreview: React.FC = () => {
     const { format, setFormat } = useStore();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    // Initialize render loop AND get access to loaded assets
-    const { assets } = useCanvasRender(canvasRef) as any; // Temporary cast to fix build until hook types are perfected
-
     // Export logic
     const { isExporting, progress, startOfflineExport } = useOfflineExport();
+
+    // Initialize render loop AND get access to loaded assets
+    const { assets } = useCanvasRender(canvasRef, isExporting) as any; // Temporary cast to fix build until hook types are perfected
 
     return (
         <div className="flex-1 bg-[#101010] relative flex flex-col overflow-hidden">

@@ -1,4 +1,4 @@
-import { Muxer, ArrayBufferTarget } from 'webm-muxer';
+import WebMWriter from 'webm-writer';
 import { renderFrame } from './renderLoop';
 import type { RenderAssets, Particle } from './renderLoop';
 import type { CTAState } from '../../store/useStore';
@@ -30,73 +30,48 @@ export const exportVideoOffline = async (
         const physicalW = baseW * superSampling;
         const physicalH = baseH * superSampling;
         const fps = 60;
+        const msPerFrame = 1000 / fps;
 
-        console.log(`[OfflineExport] Starting export. Res: ${resolution}, SS: ${superSampling}, Dims: ${physicalW}x${physicalH}, FPS: ${fps}`);
+        console.log(`[OfflineExport] Starting export (webm-writer). Res: ${resolution}, SS: ${superSampling}, Dims: ${physicalW}x${physicalH}, FPS: ${fps}`);
 
         // Calculate Global Scale
         const logicalRefW = format === 'landscape' ? 1920 : 1080;
         const globalScale = physicalW / logicalRefW;
 
         // 2. Setup Canvas
-        console.log('[OfflineExport] Creating OffscreenCanvas...');
-        const offscreenCanvas = new OffscreenCanvas(physicalW, physicalH);
-        const ctx = offscreenCanvas.getContext('2d', {
+        console.log('[OfflineExport] Creating CanvasElement...');
+        const canvas = document.createElement('canvas');
+        canvas.width = physicalW;
+        canvas.height = physicalH;
+
+        const ctx = canvas.getContext('2d', {
             willReadFrequently: true,
             alpha: true
-        }) as OffscreenCanvasRenderingContext2D; // Optimized attributes
-        if (!ctx) throw new Error('Could not create offscreen context');
-
-        // 3. Setup Muxer & Encoder
-        const durationSec = 6.0 * animation.duration;
-        const totalFrames = Math.ceil(durationSec * fps);
-        console.log(`[OfflineExport] Total Frames: ${totalFrames}`);
-
-        const muxer = new Muxer({
-            target: new ArrayBufferTarget(),
-            video: {
-                codec: 'V_VP9',
-                width: physicalW,
-                height: physicalH,
-                frameRate: fps
-            }
         });
+        if (!ctx) throw new Error('Could not create canvas context');
 
-        const videoEncoder = new VideoEncoder({
-            output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
-            error: (e) => {
-                console.error('[OfflineExport] Encoder Error:', e);
-                onError(e);
-            }
-        });
-
-        const bitrate = Math.min(100_000_000, physicalW * physicalH * fps * 0.1);
-        console.log(`[OfflineExport] Configuring Encoder. Codec: vp09.00.41.08, Bitrate: ${bitrate}`);
-
-        videoEncoder.configure({
-            codec: 'vp09.00.41.08', // VP9 Profile 0, Level 4.1
-            width: physicalW,
-            height: physicalH,
-            bitrate: bitrate,
-            framerate: fps
+        // 3. Setup WebM Writer
+        console.log('[OfflineExport] Initializing Video Writer...');
+        const videoWriter = new WebMWriter({
+            quality: 0.9,
+            frameRate: fps,
+            transparent: true, // Critical for alpha channel
         });
 
         // 4. Render Loop
+        const durationSec = 6.0 * animation.duration;
+        const totalFrames = Math.ceil(durationSec * fps);
         const particlesRef = { current: [] as Particle[] };
 
-        console.log('[OfflineExport] Starting Render Loop...');
-        for (let i = 0; i < totalFrames; i++) {
-            if (videoEncoder.state === 'closed') {
-                console.error('[OfflineExport] Encoder closed unexpectedly at frame ' + i);
-                throw new Error('VideoEncoder closed unexpectedly');
-            }
+        console.log(`[OfflineExport] Starting Render Loop. Total Frames: ${totalFrames}`);
 
-            const time = (i / fps) * 1000; // time in ms
+        for (let i = 0; i < totalFrames; i++) {
+            const time = i * msPerFrame;
 
             // Render
             try {
-                // console.log(`[OfflineExport] Render Frame ${i}`); // Verbose log
                 renderFrame(
-                    ctx as any, // Cast to any because renderFrame expects CanvasRenderingContext2D
+                    ctx as any, // Cast because renderFrame expects DOM canvas context
                     physicalW,
                     physicalH,
                     time,
@@ -110,47 +85,28 @@ export const exportVideoOffline = async (
                 throw renderErr;
             }
 
-            // Create VideoFrame
-            let frame: VideoFrame | null = null;
+            // Add Frame to Writer
+            // webm-writer accepts canvas directly
             try {
-                frame = new VideoFrame(offscreenCanvas, { timestamp: time * 1000 });
-            } catch (frameErr) {
-                console.error(`[OfflineExport] VideoFrame creation failed at frame ${i}:`, frameErr);
-                throw frameErr;
+                videoWriter.addFrame(canvas); // Pass standard canvas
+            } catch (writeErr) {
+                console.error(`[OfflineExport] Writer error at frame ${i}:`, writeErr);
+                throw writeErr;
             }
-
-            // Encode
-            try {
-                videoEncoder.encode(frame, { keyFrame: i % 60 === 0 });
-            } catch (e) {
-                console.error('[OfflineExport] Encode failed at frame ' + i, e);
-                frame.close();
-                throw e;
-            }
-            frame.close(); // Important to close frame to release memory
 
             // Report Progress
             if (i % 30 === 0) console.log(`[OfflineExport] Progress: ${i}/${totalFrames}`);
             onProgress((i / totalFrames) * 100);
 
-            // Allow UI to breathe - Slightly increased delay to prevent browser freeze
-            if (i % 2 === 0) await new Promise(r => setTimeout(r, 0));
+            // Yield to event loop to keep UI responsive
+            if (i % 5 === 0) await new Promise(r => setTimeout(r, 0));
         }
 
-        console.log('[OfflineExport] Rendering done. Flushing encoder...');
+        console.log('[OfflineExport] Rendering done. Finalizing video...');
 
         // 5. Finalize
-        if (videoEncoder.state === 'configured') {
-            await videoEncoder.flush();
-        }
-
-        console.log('[OfflineExport] Encoder flushed. Finalizing muxer...');
-        muxer.finalize();
-
-        const { buffer } = muxer.target;
-        console.log(`[OfflineExport] Muxing complete. Buffer size: ${buffer.byteLength}`);
-
-        const blob = new Blob([buffer], { type: 'video/webm' });
+        const blob = await videoWriter.complete();
+        console.log(`[OfflineExport] Encoding complete. Blob size: ${blob.size}`);
 
         // Download
         const defaultName = `cta-${resolution}-${Date.now()}.webm`;

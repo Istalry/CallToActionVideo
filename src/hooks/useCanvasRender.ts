@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { renderFrame, type Particle } from '../features/generator/renderLoop';
 
-export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
+export const useCanvasRender = (
+    canvasRef: React.RefObject<HTMLCanvasElement | null>,
+    isPaused: boolean = false
+) => {
     const state = useStore();
-    const { imageUrl, resolution, format } = state;
+    const { imageUrl, format } = state;
 
     const animationRef = useRef<number>(0);
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -24,22 +27,8 @@ export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | n
         scratchCanvas: scratchCanvasRef.current
     };
 
-    // Helpers for resolution
-    const getBaseDimensions = () => {
-        let width = 1920;
-        let height = 1080;
 
-        if (resolution === '480p') { width = 854; height = 480; }
-        if (resolution === '720p') { width = 1280; height = 720; }
-        if (resolution === '1080p') { width = 1920; height = 1080; }
-        if (resolution === '2k') { width = 2560; height = 1440; }
-        if (resolution === '4k') { width = 3840; height = 2160; }
 
-        if (format === 'portrait') return { width: height, height: width };
-        return { width, height };
-    };
-
-    // Load user image
     useEffect(() => {
         if (imageUrl) {
             const img = new Image();
@@ -89,12 +78,17 @@ export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | n
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
 
-            // Dimensions
-            const { width: baseW, height: baseH } = getBaseDimensions();
+            // Dimensions - FIXED: Force 720p for preview to save GPU usage
+            // const { width: baseW, height: baseH } = getBaseDimensions();
             // Apply Supersampling (Preview always 1x or limited)
-            // We use 1x for preview to prevent 8K canvas causing browser lag/blinking
-            const physicalW = baseW;
-            const physicalH = baseH;
+            // FIXED: Force 720p for preview to save GPU usage
+            let physicalW = 1280;
+            let physicalH = 720;
+
+            if (format === 'portrait') {
+                physicalW = 720;
+                physicalH = 1280;
+            }
 
             // Set Canvas Size
             if (canvas.width !== physicalW || canvas.height !== physicalH) {
@@ -129,12 +123,14 @@ export const useCanvasRender = (canvasRef: React.RefObject<HTMLCanvasElement | n
             animationRef.current = requestAnimationFrame(render);
         };
 
-        animationRef.current = requestAnimationFrame(render);
+        if (!isPaused) {
+            animationRef.current = requestAnimationFrame(render);
+        }
 
         return () => {
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
-    }, [state]);
+    }, [state, isPaused]);
 
     return { assets };
 };

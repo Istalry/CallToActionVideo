@@ -14,8 +14,10 @@ We will utilize a **Web Application** architecture hosted on GitHub Pages. This 
     -   *State Separation*: Rendering logic is pure and separated from React state (`useStore`).
     -   *Tweening*: Custom easing functions (`easings.ts`) support `Smooth` (Expo), `Elastic`, and `Bounce` curves.
     -   *Particles*: Advanced particle system supporting Gravity, Rotation, and Custom Images (via `ctx.drawImage` with rotation transforms).
--   **Video Export**: `MediaRecorder` API (browser native) capturing the Canvas stream.
-    -   Output: `video/webm; codecs=vp9` (supports transparency), falling back to `vp8`.
+-   **Video Export**: **webm-writer** (JavaScript Encoder)
+    -   *Why*: Native `VideoEncoder` alpha support is inconsistent in Electron/Chromium.
+    -   *Implementation*: Frames are rendered to an `OffscreenCanvas` and passed to `webm-writer`, which encodes them using a pure JavaScript VP8 encoder.
+    -   *Output*: `video/webm; codecs=vp8` with full alpha channel support.
 -   **Desktop App**: **Electron**
     -   Wraps the web app for standalone executable generation.
     -   Uses `electron-builder` for packaging.
