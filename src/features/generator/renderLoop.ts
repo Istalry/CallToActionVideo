@@ -32,6 +32,7 @@ export const renderFrame = (
     particlesRef: React.MutableRefObject<Particle[]>,
     scale: number = 1
 ) => {
+    const globalRenderScale = scale; // Capture global scale to avoid shadowing
     const {
         primaryText, underText, subscribedText,
         format, imageTransform,
@@ -276,20 +277,21 @@ export const renderFrame = (
                         const scratchCtx = assets.scratchCanvas.getContext('2d');
                         if (scratchCtx) {
                             // Clear scratch canvas
-                            assets.scratchCanvas.width = size; // Resize to fit particle (optimization: could be fixed size if particles are similar)
-                            assets.scratchCanvas.height = size;
+                            const physicalSize = size * globalRenderScale;
+                            assets.scratchCanvas.width = physicalSize;
+                            assets.scratchCanvas.height = physicalSize;
 
-                            // Draw the image
-                            scratchCtx.drawImage(assets.particleImage, 0, 0, size, size);
+                            // Draw the image (scaled)
+                            scratchCtx.drawImage(assets.particleImage, 0, 0, physicalSize, physicalSize);
 
                             // Composite the color (Multiply to preserve nuance)
                             scratchCtx.globalCompositeOperation = 'multiply';
                             scratchCtx.fillStyle = p.color;
-                            scratchCtx.fillRect(0, 0, size, size);
+                            scratchCtx.fillRect(0, 0, physicalSize, physicalSize);
 
                             // Restore alpha using destination-in (clips back to original image alpha)
                             scratchCtx.globalCompositeOperation = 'destination-in';
-                            scratchCtx.drawImage(assets.particleImage, 0, 0, size, size);
+                            scratchCtx.drawImage(assets.particleImage, 0, 0, physicalSize, physicalSize);
 
                             // Reset composite mode
                             scratchCtx.globalCompositeOperation = 'source-over';

@@ -1,6 +1,0 @@
-@echo off
-echo Starting CTA Video Generator...
-echo Opening in default browser...
-cd /d "%~dp0"
-npm run dev -- --host --open
-pause

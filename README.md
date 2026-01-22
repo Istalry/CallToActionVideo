@@ -8,9 +8,7 @@ A web-based tool for streamers to create professional "Call to Action" (CTA) vid
 
 ## Demo
 
-<video src="/exampleVideo.mp4" controls width="100%"></video>
-
-*(If the video doesn't play, you can [download it here](/exampleVideo.mp4))*
+![Example Video](resources/exampleVideo.gif)
 
 ## Features
 
@@ -23,6 +21,8 @@ A web-based tool for streamers to create professional "Call to Action" (CTA) vid
     -   **Animation**: Choose from "Smooth", "Elastic", or "Bounce" easing curves.
     -   **Particles**: Add gravity-defying confetti or custom image particles.
 -   **Privacy Focused**: All processing happens client-side.
+
+![UI](resources/portrait.png)
 
 ## Installation
 

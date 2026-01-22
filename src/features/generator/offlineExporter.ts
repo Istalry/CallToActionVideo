@@ -1,4 +1,3 @@
-import WebMWriter from 'webm-writer';
 import { renderFrame } from './renderLoop';
 import type { RenderAssets, Particle } from './renderLoop';
 import type { CTAState } from '../../store/useStore';
@@ -32,46 +31,61 @@ export const exportVideoOffline = async (
         const fps = 60;
         const msPerFrame = 1000 / fps;
 
-        console.log(`[OfflineExport] Starting export (webm-writer). Res: ${resolution}, SS: ${superSampling}, Dims: ${physicalW}x${physicalH}, FPS: ${fps}`);
+        // Calculate Bitrate (Simple heuristic)
+        // 4K ~ 25Mbps, 1080p ~ 8Mbps
+        let bitrate = 8_000_000;
+        if (resolution === '2k') bitrate = 15_000_000;
+        if (resolution === '4k') bitrate = 25_000_000;
 
-        // Calculate Global Scale
-        const logicalRefW = format === 'landscape' ? 1920 : 1080;
-        const globalScale = physicalW / logicalRefW;
+        console.log(`[OfflineExport] Starting Native FFmpeg export. Res: ${resolution} (${physicalW}x${physicalH}), Bitrate: ${bitrate / 1e6}Mbps`);
 
         // 2. Setup Canvas
-        console.log('[OfflineExport] Creating CanvasElement...');
         const canvas = document.createElement('canvas');
         canvas.width = physicalW;
         canvas.height = physicalH;
 
         const ctx = canvas.getContext('2d', {
-            willReadFrequently: true,
             alpha: true
         });
         if (!ctx) throw new Error('Could not create canvas context');
 
-        // 3. Setup WebM Writer
-        console.log('[OfflineExport] Initializing Video Writer...');
-        const videoWriter = new WebMWriter({
-            quality: 0.9,
-            frameRate: fps,
-            transparent: true, // Critical for alpha channel
+        // Quality settings
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // 3. Start FFmpeg via IPC
+        // Ask user for save path
+        const filename = await window.electron.selectSavePath();
+        if (!filename) {
+            console.log('[OfflineExport] User cancelled save dialog.');
+            onComplete(); // Or should we just return?
+            return;
+        }
+
+        await window.electron.ffmpegStart({
+            width: physicalW,
+            height: physicalH,
+            fps,
+            bitrate,
+            filename // Now full path
         });
 
         // 4. Render Loop
         const durationSec = 6.0 * animation.duration;
         const totalFrames = Math.ceil(durationSec * fps);
         const particlesRef = { current: [] as Particle[] };
+        const logicalRefW = format === 'landscape' ? 1920 : 1080;
+        const globalScale = physicalW / logicalRefW;
 
-        console.log(`[OfflineExport] Starting Render Loop. Total Frames: ${totalFrames}`);
+        console.log(`[OfflineExport] Starting Render Loop. Frames: ${totalFrames}`);
 
         for (let i = 0; i < totalFrames; i++) {
             const time = i * msPerFrame;
 
-            // Render
+            // Render to Canvas
             try {
                 renderFrame(
-                    ctx as any, // Cast because renderFrame expects DOM canvas context
+                    ctx as any,
                     physicalW,
                     physicalH,
                     time,
@@ -85,41 +99,30 @@ export const exportVideoOffline = async (
                 throw renderErr;
             }
 
-            // Add Frame to Writer
-            // webm-writer accepts canvas directly
-            try {
-                videoWriter.addFrame(canvas); // Pass standard canvas
-            } catch (writeErr) {
-                console.error(`[OfflineExport] Writer error at frame ${i}:`, writeErr);
-                throw writeErr;
-            }
+            // Convert to PNG Buffer (Lossless high quality)
+            // This is the heavy part, but ensures perfect quality send to FFmpeg
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (!blob) throw new Error('Failed to create frame blob');
 
-            // Report Progress
-            if (i % 30 === 0) console.log(`[OfflineExport] Progress: ${i}/${totalFrames}`);
+            const buffer = await blob.arrayBuffer();
+
+            // Send to FFmpeg
+            await window.electron.ffmpegFeed(buffer);
+
+            // Progress
+            if (i % 30 === 0) console.log(`[OfflineExport] Sent: ${i}/${totalFrames}`);
             onProgress((i / totalFrames) * 100);
 
-            // Yield to event loop to keep UI responsive
+            // Yield
             if (i % 5 === 0) await new Promise(r => setTimeout(r, 0));
         }
 
-        console.log('[OfflineExport] Rendering done. Finalizing video...');
+        console.log('[OfflineExport] Rendering done. Finishing FFmpeg...');
 
-        // 5. Finalize
-        const blob = await videoWriter.complete();
-        console.log(`[OfflineExport] Encoding complete. Blob size: ${blob.size}`);
+        // 5. Finish
+        await window.electron.ffmpegFinish();
 
-        // Download
-        const defaultName = `cta-${resolution}-${Date.now()}.webm`;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = defaultName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        console.log('[OfflineExport] Download triggered.');
+        console.log('[OfflineExport] Export Complete.');
         onComplete();
 
     } catch (err) {
