@@ -8,9 +8,9 @@ A web-based tool for streamers to create professional "Call to Action" (CTA) vid
 
 ## Demo
 
-<video src="exampleVideo.webm" controls width="100%"></video>
+<video src="/exampleVideo.mp4" controls width="100%"></video>
 
-*(If the video doesn't play, you can [download it here](exampleVideo.webm))*
+*(If the video doesn't play, you can [download it here](/exampleVideo.mp4))*
 
 ## Features
 
@@ -35,7 +35,7 @@ A web-based tool for streamers to create professional "Call to Action" (CTA) vid
 ### For Developers
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/call-to-action-video.git
+    git clone https://github.com/Istalry/CallToActionVideo.git
     cd call-to-action-video
     ```
 2.  Install dependencies:
