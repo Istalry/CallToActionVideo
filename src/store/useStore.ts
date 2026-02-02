@@ -2,7 +2,9 @@ import { create } from 'zustand';
 
 export interface CTAState {
     primaryText: string;
+    primaryTextSize: number;
     underText: string;
+    underTextSize: number;
     imageUrl: string | null;
     format: 'landscape' | 'portrait';
     imageTransform: { scale: number; x: number; y: number };
@@ -33,13 +35,18 @@ export interface CTAState {
         shape: 'square' | 'circle' | 'image';
         image: string | null;
         colors: string[];
+        seed: number;
     };
 
     subscribedText: string;
+    subscribedTextSize: number;
 
     setPrimaryText: (text: string) => void;
+    setPrimaryTextSize: (size: number) => void;
     setUnderText: (text: string) => void;
+    setUnderTextSize: (size: number) => void;
     setSubscribedText: (text: string) => void;
+    setSubscribedTextSize: (size: number) => void;
     setImageUrl: (url: string | null) => void;
     setImageTransform: (transform: Partial<{ scale: number; x: number; y: number }>) => void;
     setRoundness: (roundness: number) => void;
@@ -70,6 +77,7 @@ export interface CTAState {
         shape: 'square' | 'circle' | 'image';
         image: string | null;
         colors: string[];
+        seed: number;
     }>) => void;
 
     // Output Settings
@@ -81,8 +89,11 @@ export interface CTAState {
 
 export const useStore = create<CTAState>((set) => ({
     primaryText: 'Subscribe',
+    primaryTextSize: 72,
     underText: 'twitch.tv/mychannel',
+    underTextSize: 36,
     subscribedText: 'SUBSCRIBED',
+    subscribedTextSize: 72,
     imageUrl: null,
     imageTransform: { scale: 1, x: 0, y: 0 },
     ctaColors: {
@@ -120,15 +131,19 @@ export const useStore = create<CTAState>((set) => ({
         noiseScale: 100,
         shape: 'square',
         image: null,
-        colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#8b5cf6']
+        colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#8b5cf6'],
+        seed: 12345
     },
 
     resolution: '1080p',
     superSampling: 1,
 
     setPrimaryText: (text) => set({ primaryText: text }),
+    setPrimaryTextSize: (size) => set({ primaryTextSize: size }),
     setUnderText: (text) => set({ underText: text }),
+    setUnderTextSize: (size) => set({ underTextSize: size }),
     setSubscribedText: (text) => set({ subscribedText: text }),
+    setSubscribedTextSize: (size) => set({ subscribedTextSize: size }),
     setImageUrl: (url) => set({ imageUrl: url }),
     setImageTransform: (transform) => set((state) => ({ imageTransform: { ...state.imageTransform, ...transform } })),
     setRoundness: (roundness) => set({ roundness }),

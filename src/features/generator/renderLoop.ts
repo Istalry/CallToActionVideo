@@ -1,6 +1,17 @@
 import type { CTAState } from '../../store/useStore';
 import { Easing } from '../../utils/easings';
-import { noise2D } from '../../utils/noise';
+import { createNoise2D } from '../../utils/noise';
+
+let cachedSeed: number | null = null;
+let noiseFn: ((x: number, y: number) => number) | null = null;
+
+const getNoise = (seed: number) => {
+    if (cachedSeed !== seed || !noiseFn) {
+        noiseFn = createNoise2D(seed);
+        cachedSeed = seed;
+    }
+    return noiseFn;
+};
 
 export interface RenderAssets {
     image: HTMLImageElement | null;
@@ -35,6 +46,7 @@ export const renderFrame = (
     const globalRenderScale = scale; // Capture global scale to avoid shadowing
     const {
         primaryText, underText, subscribedText,
+        primaryTextSize, underTextSize, subscribedTextSize,
         format, imageTransform,
         ctaColors, subscribedColors, roundness,
         animation, cursor, particles
@@ -180,8 +192,8 @@ export const renderFrame = (
     const textX = x + 200;
     const textCenterY = y + boxH / 2;
     const textGap = 15;
-    const primaryHeight = 72 * 0.72; // ~52px
-    const underHeight = 36 * 0.72;   // ~26px
+    const primaryHeight = primaryTextSize * 0.72; // Cap height approx
+    const underHeight = underTextSize * 0.72;   // Cap height approx
     const totalHeight = primaryHeight + textGap + underHeight;
     const blockTopY = textCenterY - (totalHeight / 2);
 
@@ -193,13 +205,13 @@ export const renderFrame = (
 
     // Primary Text
     ctx.fillStyle = isClicked ? subscribedColors.text : ctaColors.text;
-    ctx.font = 'bold 72px Inter, sans-serif';
+    ctx.font = `bold ${isClicked ? subscribedTextSize : primaryTextSize}px Inter, sans-serif`;
     ctx.textBaseline = 'top';
     ctx.fillText(isClicked ? subscribedText : primaryText, drawX, blockTopY);
 
     // Under Text
     ctx.fillStyle = isClicked ? subscribedColors.underText : ctaColors.underText;
-    ctx.font = '36px Inter, sans-serif';
+    ctx.font = `${underTextSize}px Inter, sans-serif`;
     ctx.textBaseline = 'top';
     ctx.fillText(underText, drawX, blockTopY + primaryHeight + textGap);
 
@@ -237,10 +249,16 @@ export const renderFrame = (
         particlesRef.current.forEach((p) => {
             // Noise
             if (particles.noiseStrength > 0) {
-                const n = noise2D(p.x / particles.noiseScale, p.y / particles.noiseScale);
-                const angle = n * Math.PI * 2;
-                p.vx += Math.cos(angle) * particles.noiseStrength * 0.1;
-                p.vy += Math.sin(angle) * particles.noiseStrength * 0.1;
+                const noise = getNoise(particles.seed);
+                const nx = noise(p.x / particles.noiseScale, p.y / particles.noiseScale);
+                const ny = noise((p.x / particles.noiseScale) + 123.45, (p.y / particles.noiseScale) + 123.45); // Offset for independence
+
+                p.vx += nx * particles.noiseStrength * 0.1;
+                p.vy += ny * particles.noiseStrength * 0.1;
+
+                // Add Drag to prevent infinite acceleration
+                p.vx *= 0.95;
+                p.vy *= 0.95;
             }
 
             p.x += p.vx;

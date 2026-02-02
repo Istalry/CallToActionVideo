@@ -20,6 +20,9 @@ export const Controls: React.FC = () => {
         cursor, setCursor,
         particles, setParticles,
         subscribedText, setSubscribedText,
+        primaryTextSize, setPrimaryTextSize,
+        underTextSize, setUnderTextSize,
+        subscribedTextSize, setSubscribedTextSize,
         resolution, setResolution,
         superSampling, setSuperSampling
     } = useStore();
@@ -89,25 +92,59 @@ export const Controls: React.FC = () => {
                         )}
 
                         <div className="space-y-2">
-                            <Input
-                                value={primaryText}
-                                onChange={(e) => setPrimaryText(e.target.value)}
-                                placeholder="Header Text"
-                            />
-                            <Input
-                                value={underText}
-                                onChange={(e) => setUnderText(e.target.value)}
-                                placeholder="Sub-text"
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    className="flex-1"
+                                    value={primaryText}
+                                    onChange={(e) => setPrimaryText(e.target.value)}
+                                    placeholder="Header Text"
+                                />
+                                <div className="w-16">
+                                    <Input
+                                        type="number"
+                                        value={primaryTextSize}
+                                        onChange={(e) => setPrimaryTextSize(parseInt(e.target.value))}
+                                        placeholder="Size"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Input
+                                    className="flex-1"
+                                    value={underText}
+                                    onChange={(e) => setUnderText(e.target.value)}
+                                    placeholder="Sub-text"
+                                />
+                                <div className="w-16">
+                                    <Input
+                                        type="number"
+                                        value={underTextSize}
+                                        onChange={(e) => setUnderTextSize(parseInt(e.target.value))}
+                                        placeholder="Size"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="pt-2 border-t border-gray-800">
-                            <Input
-                                label="Subscribed Text"
-                                value={subscribedText}
-                                onChange={(e) => setSubscribedText(e.target.value)}
-                                placeholder="Subscribed Text"
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    className="flex-1"
+                                    label="Subscribed Text"
+                                    value={subscribedText}
+                                    onChange={(e) => setSubscribedText(e.target.value)}
+                                    placeholder="Subscribed Text"
+                                />
+                                <div className="w-16">
+                                    <Input
+                                        label="Size"
+                                        type="number"
+                                        value={subscribedTextSize}
+                                        onChange={(e) => setSubscribedTextSize(parseInt(e.target.value))}
+                                        placeholder="Size"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </Section>
@@ -379,6 +416,22 @@ export const Controls: React.FC = () => {
                                         value={particles.noiseScale}
                                         onChange={(e) => setParticles({ noiseScale: parseInt(e.target.value) })}
                                     />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input
+                                        label="Seed"
+                                        type="number"
+                                        value={particles.seed}
+                                        onChange={(e) => setParticles({ seed: parseInt(e.target.value) })}
+                                    />
+                                    <div className="flex items-end">
+                                        <button
+                                            className="h-[34px] w-full bg-white/5 hover:bg-white/10 text-white text-xs rounded border border-gray-700 transition-colors"
+                                            onClick={() => setParticles({ seed: Math.floor(Math.random() * 100000) })}
+                                        >
+                                            Randomize Input
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div>
