@@ -27,7 +27,7 @@ A web-based tool for streamers to create professional "Call to Action" (CTA) vid
 ## Installation
 
 ### For Users (Windows)
-1.  Go to the **Releases** page on GitHub (Right sidebar).
+1.  Go to the [`Releases`](https://github.com/Istalry/CallToActionVideo/releases) page on GitHub (Right sidebar).
 2.  Download the latest `.zip` file.
 3.  Extract the contents of the zip file to a folder.
 4.  Run the `CTA Video Generator.exe` file.
