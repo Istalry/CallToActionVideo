@@ -257,8 +257,8 @@ export const renderFrame = (
                 p.vy += ny * particles.noiseStrength * 0.1;
 
                 // Add Drag to prevent infinite acceleration
-                p.vx *= 0.95;
-                p.vy *= 0.95;
+                p.vx *= particles.damping;
+                p.vy *= particles.damping;
             }
 
             p.x += p.vx;

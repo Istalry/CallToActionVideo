@@ -36,6 +36,7 @@ export interface CTAState {
         image: string | null;
         colors: string[];
         seed: number;
+        damping: number;
     };
 
     subscribedText: string;
@@ -78,6 +79,7 @@ export interface CTAState {
         image: string | null;
         colors: string[];
         seed: number;
+        damping: number;
     }>) => void;
 
     // Output Settings
@@ -132,7 +134,8 @@ export const useStore = create<CTAState>((set) => ({
         shape: 'square',
         image: null,
         colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#8b5cf6'],
-        seed: 12345
+        seed: 12345,
+        damping: 1.0
     },
 
     resolution: '1080p',

@@ -386,6 +386,13 @@ export const Controls: React.FC = () => {
                                         onChange={(e) => setParticles({ lifeMax: parseFloat(e.target.value) })}
                                     />
                                 </div>
+                                <Slider
+                                    label="Damping"
+                                    valueDisplay={particles.damping}
+                                    min="0.8" max="1.0" step="0.001"
+                                    value={particles.damping}
+                                    onChange={(e) => setParticles({ damping: parseFloat(e.target.value) })}
+                                />
 
                                 <div className="space-y-1">
                                     <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Fade Mode</label>
