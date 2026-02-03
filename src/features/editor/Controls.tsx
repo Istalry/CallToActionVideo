@@ -24,7 +24,8 @@ export const Controls: React.FC = () => {
         underTextSize, setUnderTextSize,
         subscribedTextSize, setSubscribedTextSize,
         resolution, setResolution,
-        superSampling, setSuperSampling
+        superSampling, setSuperSampling,
+        exportFormat, setExportFormat
     } = useStore();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -480,6 +481,25 @@ export const Controls: React.FC = () => {
                                 <option value="2k">2K (QHD)</option>
                                 <option value="4k">4K (UHD)</option>
                             </select>
+                        </div>
+
+                        {/* Export Format Toggle */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Format</label>
+                            <div className="flex bg-background border border-gray-700 rounded p-1">
+                                <button
+                                    onClick={() => setExportFormat('webm')}
+                                    className={`flex-1 py-1 text-xs rounded transition-colors ${exportFormat === 'webm' ? 'bg-primary text-white font-medium' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                    WebM
+                                </button>
+                                <button
+                                    onClick={() => setExportFormat('mov')}
+                                    className={`flex-1 py-1 text-xs rounded transition-colors ${exportFormat === 'mov' ? 'bg-primary text-white font-medium' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                    MOV
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between">

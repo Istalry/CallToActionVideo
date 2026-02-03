@@ -85,8 +85,10 @@ export interface CTAState {
     // Output Settings
     resolution: '480p' | '720p' | '1080p' | '2k' | '4k';
     superSampling: 1 | 2;
+    exportFormat: 'webm' | 'mov';
     setResolution: (res: '480p' | '720p' | '1080p' | '2k' | '4k') => void;
     setSuperSampling: (ss: 1 | 2) => void;
+    setExportFormat: (format: 'webm' | 'mov') => void;
 }
 
 export const useStore = create<CTAState>((set) => ({
@@ -140,6 +142,7 @@ export const useStore = create<CTAState>((set) => ({
 
     resolution: '1080p',
     superSampling: 1,
+    exportFormat: 'mov',
 
     setPrimaryText: (text) => set({ primaryText: text }),
     setPrimaryTextSize: (size) => set({ primaryTextSize: size }),
@@ -158,4 +161,5 @@ export const useStore = create<CTAState>((set) => ({
     setParticles: (particles) => set((state) => ({ particles: { ...state.particles, ...particles } })),
     setResolution: (res) => set({ resolution: res }),
     setSuperSampling: (ss) => set({ superSampling: ss }),
+    setExportFormat: (format) => set({ exportFormat: format }),
 }));

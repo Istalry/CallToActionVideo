@@ -10,7 +10,7 @@ export const exportVideoOffline = async (
     onError: (err: unknown) => void
 ) => {
     try {
-        const { resolution, superSampling, format, animation } = state;
+        const { resolution, superSampling, format, animation, exportFormat } = state;
 
         // 1. Calculate Dimensions
         const getBaseDimensions = () => {
@@ -55,7 +55,7 @@ export const exportVideoOffline = async (
 
         // 3. Start FFmpeg via IPC
         // Ask user for save path
-        const filename = await window.electron.selectSavePath();
+        const filename = await window.electron.selectSavePath(exportFormat);
         if (!filename) {
             console.log('[OfflineExport] User cancelled save dialog.');
             onComplete(); // Or should we just return?

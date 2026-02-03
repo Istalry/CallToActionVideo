@@ -86,10 +86,21 @@ ipcMain.handle('ffmpeg-start', async (_event, options: { width: number; height: 
         '-vcodec', 'png',
         '-r', options.fps.toString(),
         '-i', '-', // Input from stdin
-        '-c:v', 'libvpx-vp9',
-        '-b:v', options.bitrate.toString(),
-        '-pix_fmt', 'yuva420p', // Alpha support
-        '-auto-alt-ref', '0', // Disable alt-ref frames for transparency safety (sometimes needed)
+        ...(outputPath.endsWith('.mov')
+            ? [
+                '-c:v', 'prores_ks',
+                '-profile:v', '4444',
+                '-pix_fmt', 'yuva444p10le', // 10-bit alpha
+                '-q:v', '4', // Quality scale (lower is better for prores_ks)
+                '-vendor', 'apl0', // Apple compatibility
+            ]
+            : [
+                '-c:v', 'libvpx-vp9',
+                '-b:v', options.bitrate.toString(),
+                '-pix_fmt', 'yuva420p', // Alpha support
+                '-auto-alt-ref', '0', // Disable alt-ref frames for transparency safety
+            ]
+        ),
         outputPath
     ];
 
@@ -109,19 +120,21 @@ ipcMain.handle('ffmpeg-start', async (_event, options: { width: number; height: 
     });
 });
 
-ipcMain.handle('dialog-save-path', async () => {
-    const { canceled, filePath } = await getSaveDialog();
+ipcMain.handle('dialog-save-path', async (_event, format: 'webm' | 'mov' = 'webm') => {
+    const { canceled, filePath } = await getSaveDialog(format);
     if (canceled) return null;
     return filePath;
 });
 
-async function getSaveDialog() {
+async function getSaveDialog(format: 'webm' | 'mov') {
     // Import dialog dynamically or move import to top if possible (top is cleaner)
     const { dialog } = await import('electron');
     return dialog.showSaveDialog({
         title: 'Save Video',
-        defaultPath: `cta-video-${Date.now()}.webm`,
-        filters: [
+        defaultPath: `cta-video-${Date.now()}.${format}`,
+        filters: format === 'mov' ? [
+            { name: 'QuickTime Video', extensions: ['mov'] }
+        ] : [
             { name: 'WebM Video', extensions: ['webm'] }
         ]
     });
