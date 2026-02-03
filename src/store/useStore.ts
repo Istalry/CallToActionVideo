@@ -89,6 +89,7 @@ export interface CTAState {
     setResolution: (res: '480p' | '720p' | '1080p' | '2k' | '4k') => void;
     setSuperSampling: (ss: 1 | 2) => void;
     setExportFormat: (format: 'webm' | 'mov') => void;
+    loadConfig: (config: Partial<CTAState>) => void;
 }
 
 export const useStore = create<CTAState>((set) => ({
@@ -162,4 +163,35 @@ export const useStore = create<CTAState>((set) => ({
     setResolution: (res) => set({ resolution: res }),
     setSuperSampling: (ss) => set({ superSampling: ss }),
     setExportFormat: (format) => set({ exportFormat: format }),
+    loadConfig: (config) => set((state) => {
+        const newState = { ...state };
+
+        // Smart merge for future-proofing
+        Object.keys(newState).forEach((key) => {
+            // Only update keys that exist in the current store (state)
+            // This ignores obsolete keys from old config files
+            if (key in config) {
+                const configValue = (config as any)[key];
+                const stateValue = (state as any)[key];
+
+                // Deep merge for specific nested objects
+                if (
+                    ['ctaColors', 'subscribedColors', 'animation', 'cursor', 'particles', 'imageTransform'].includes(key) &&
+                    typeof configValue === 'object' &&
+                    configValue !== null &&
+                    !Array.isArray(configValue)
+                ) {
+                    (newState as any)[key] = {
+                        ...stateValue,
+                        ...configValue // Merge nested properties, missing ones use current state defaults
+                    };
+                } else {
+                    // Primitive values or arrays (replace completely)
+                    (newState as any)[key] = configValue;
+                }
+            }
+        });
+
+        return newState;
+    }),
 }));

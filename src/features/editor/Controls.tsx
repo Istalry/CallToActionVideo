@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useStore } from '../../store/useStore';
-import { Image as ImageIcon, Palette, Settings, Sparkles, Download } from 'lucide-react';
+import { Image as ImageIcon, Palette, Settings, Sparkles, Download, Save, FolderOpen } from 'lucide-react';
+import { saveConfigurationToFile, loadConfigurationFromFile } from '../../utils/fileUtils';
 import { Section } from '../../components/ui/Section';
 import { Input } from '../../components/ui/Input';
 import { Slider } from '../../components/ui/Slider';
@@ -25,8 +26,26 @@ export const Controls: React.FC = () => {
         subscribedTextSize, setSubscribedTextSize,
         resolution, setResolution,
         superSampling, setSuperSampling,
-        exportFormat, setExportFormat
+
+        exportFormat, setExportFormat,
+        loadConfig
     } = useStore();
+
+    const handleSave = () => {
+        const state = useStore.getState();
+        saveConfigurationToFile(state, 'cta-config.json');
+    };
+
+    const handleLoad = async () => {
+        try {
+            const config = await loadConfigurationFromFile();
+            if (config && typeof config === 'object') {
+                loadConfig(config);
+            }
+        } catch (error) {
+            console.error('Failed to load config:', error);
+        }
+    };
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -46,6 +65,26 @@ export const Controls: React.FC = () => {
             </div>
 
             <div className="">
+                {/* 0. Presets */}
+                <Section title="Presets" icon={<Save className="w-4 h-4" />}>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleSave}
+                            className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-gray-700 rounded py-2 text-xs text-white transition-colors"
+                        >
+                            <Save className="w-3 h-3" />
+                            Save Config
+                        </button>
+                        <button
+                            onClick={handleLoad}
+                            className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-gray-700 rounded py-2 text-xs text-white transition-colors"
+                        >
+                            <FolderOpen className="w-3 h-3" />
+                            Load Config
+                        </button>
+                    </div>
+                </Section>
+
                 {/* 1. Content & Image */}
                 <Section title="Content" icon={<ImageIcon className="w-4 h-4" />}>
                     <div className="space-y-4">
@@ -350,7 +389,7 @@ export const Controls: React.FC = () => {
                                     <Slider
                                         label="Max Size"
                                         valueDisplay={particles.maxSize}
-                                        min="1" max="50"
+                                        min="1" max="200"
                                         value={particles.maxSize}
                                         onChange={(e) => setParticles({ maxSize: parseInt(e.target.value) })}
                                     />
